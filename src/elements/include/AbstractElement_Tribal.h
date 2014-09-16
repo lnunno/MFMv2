@@ -20,8 +20,8 @@
 
 /* <<TEMPLATE>> Replace doxygen and license information with your element information. */
 /**
-  \file   AbstractElement_Tribal.h Tutorial template for a new Element
-  \author Trent R. Small.
+  \file   AbstractElement_Tribal.h Tribal base class.
+  \author Lucas L. Nunno
   \date (C) 2014 All rights reserved.
   \lgpl
  */
