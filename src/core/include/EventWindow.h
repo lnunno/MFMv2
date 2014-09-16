@@ -224,7 +224,7 @@ namespace MFM {
      * Gets an Atom residing at a specified location inside this EventWindow .
      *
      * @param offset The location, relative to the center of this
-     *               EventWindow , of the Atom to be retreived. If
+     *               EventWindow , of the Atom to be retrieved. If
      *               this is not inside the EventWindow, will FAIL
      *               with ILLEGAL_ARGUMENT .
      *

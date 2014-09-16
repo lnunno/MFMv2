@@ -20,8 +20,8 @@
 
 /* <<TEMPLATE>> Replace doxygen and license information with your element information. */
 /**
-  \file   Element_Mine.h Tutorial template for a new Element
-  \author Lucas L Nunno
+  \file   Element_Mine.h Mine element, emits Res.
+  \author Lucas L. Nunno
   \date (C) 2014 All rights reserved.
   \lgpl
  */
@@ -48,20 +48,18 @@ namespace MFM
 
   private:
 
-    ElementParameterS32<CC> m_sampleParameter;
+    ElementParameterS32<CC> m_resSpawnOdds;
 
     /* <<TEMPLATE>> Add any configurable parameters here. */
 
   public:
 
-    /* <<TEMPLATE>> Replace class name with yours. Don't forget the '<CC>'. */
     static Element_Mine<CC> THE_INSTANCE;
 
     Element_Mine()
-      : Element<CC>(MFM_UUID_FOR("Template", MINE_VERSION)),
+      : Element<CC>(MFM_UUID_FOR("Mine", MINE_VERSION)),
         /* <<TEMPLATE>> Initialize all configurable parameters here. */
-        m_sampleParameter(this, "sample", "Sample Parameter",
-                  "This is the description for a sample parameter.", 1, 200, 1000, 10)
+        m_resSpawnOdds(this, "res", "Res Spawn Odds", "The probability that this mine will spawn a Res.", 1, 5, 500, 5)
     {
       /* <<TEMPLATE>> Set atomic symbol and name for your element. */
       Element<CC>::SetAtomicSymbol("Mn");
@@ -75,7 +73,7 @@ namespace MFM
     virtual u32 PercentMovable(const T& you,
                                const T& me, const SPoint& offset) const
     {
-      return 100;
+      return 0; // Mine's are not movable.
     }
 
     /* <<TEMPLATE>> This color will be the default rendering color for your element. */
@@ -90,7 +88,8 @@ namespace MFM
      */
     virtual u32 DefaultLowlightColor() const
     {
-      return 0xff770077;
+      // TODO: Figure out what color looks good here.
+      return 0x99663300;
     }
 
     /*
@@ -98,16 +97,39 @@ namespace MFM
      */
     virtual const char* GetDescription() const
     {
-      return "A producer of Res.";
+      return "A producer of Res. Stationary.";
     }
 
     /*
       <<TEMPLATE>> This method is executed every time an atom of your
                    element is chosen for an event. See the tutorial in
                    the wiki for further information.
+
+                   This code is similar to the behavior of DReg, but even simpler!
+                   Does not do any deletions.
      */
     virtual void Behavior(EventWindow<CC>& window) const
     {
+    	const MDist<R> md = MDist<R>::get();
+    	Random& random = window.GetRandom();
+
+    	SPoint dir;
+    	MDist<R>::get().FillRandomSingleDir(dir, random);
+
+		T atom = window.GetRelativeAtom(dir);
+		u32 oldType = atom.GetType();
+		if(Element_Empty<CC>::THE_INSTANCE.IsType(oldType))
+		{
+			// Only do actions on empty elements.
+
+			// Do a random roll to see if we should create a Res.
+			if(random.OneIn(m_resSpawnOdds.GetValue())){
+				// Create the Res here.
+				atom = Element_Res<CC>::THE_INSTANCE.GetDefaultAtom();
+				window.SetRelativeAtom(dir, atom);
+			}
+			// Else we didn't get lucky, don't do anything.
+		}
     }
   };
 
