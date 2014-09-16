@@ -18,14 +18,13 @@
   USA
 */
 
-/* <<TEMPLATE>> Replace doxygen and license information with your element information. */
 /**
   \file   Element_Mine.h Mine element, emits Res.
   \author Lucas L. Nunno
   \date (C) 2014 All rights reserved.
   \lgpl
  */
-#ifndef ELEMENT_MINE_H /* <<TEMPLATE>> Replace header guard with your element name.*/
+#ifndef ELEMENT_MINE_H
 #define ELEMENT_MINE_H
 
 #include "Element.h"
@@ -39,7 +38,7 @@ namespace MFM
   #define MINE_VERSION 1
 
   template <class CC>
-  class Element_Mine : public Element<CC> /* <<TEMPLATE>> Replace class name with yours */
+  class Element_Mine : public Element<CC>
   {
     // Extract short names for parameter types
     typedef typename CC::ATOM_TYPE T;
@@ -58,10 +57,8 @@ namespace MFM
 
     Element_Mine()
       : Element<CC>(MFM_UUID_FOR("Mine", MINE_VERSION)),
-        /* <<TEMPLATE>> Initialize all configurable parameters here. */
         m_resSpawnOdds(this, "res", "Res Spawn Odds", "The probability that this mine will spawn a Res.", 1, 5, 500, 5)
     {
-      /* <<TEMPLATE>> Set atomic symbol and name for your element. */
       Element<CC>::SetAtomicSymbol("Mn");
       Element<CC>::SetName("Mine");
     }
@@ -73,7 +70,7 @@ namespace MFM
     virtual u32 PercentMovable(const T& you,
                                const T& me, const SPoint& offset) const
     {
-      return 0; // Mine's are not movable.
+      return 0; // Mines are not movable.
     }
 
     /* <<TEMPLATE>> This color will be the default rendering color for your element. */
@@ -133,12 +130,9 @@ namespace MFM
     }
   };
 
-  /*
-     <<TEMPLATE>> Rename the class names here to the class name of your element.
-  */
   template <class CC>
   Element_Mine<CC> Element_Mine<CC>::THE_INSTANCE;
 
 }
 
-#endif /* ELEMENT_MINE_H */ /* <<TEMPLATE>> Rename the header guard to your element */
+#endif /* ELEMENT_MINE_H */
