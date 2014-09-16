@@ -10,5 +10,6 @@
 #include "Element_Dreg.h"
 #include "Element_Res.h"
 #include "Element_Creg.h"
+#include "Element_Mine.h"
 
 #endif /* MAIN_H */
