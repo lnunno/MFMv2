@@ -32,6 +32,7 @@
 #include "EventWindow.h"
 #include "ElementTable.h"
 #include "itype.h"
+#include "BitField.h"
 
 namespace MFM
 {
@@ -44,13 +45,39 @@ namespace MFM
     typedef typename CC::PARAM_CONFIG P;
     enum { R = P::EVENT_WINDOW_RADIUS };
 
+    // BEGIN ATOMIC PARAMETERS
+    // From the atomic parameters tutorial:
+    enum
+    {
+        BITS = P::BITS_PER_ATOM,
+
+        BYTE_BITS_LENGTH = 4,
+        BYTE_BITS_POSITION = BITS - BYTE_BITS_LENGTH - 1
+    };
+
+    typedef BitField<BitVector<BITS>, BYTE_BITS_LENGTH, BYTE_BITS_POSITION> AFByteBits;
+
+    u32 GetTribeBits(const T& us) const
+    {
+        return AFByteBits::Read(this->GetBits(us));
+    }
+
+    void SetTribeBits(const T& us, u32 bits) const
+    {
+        AFByteBits::Write(this->GetBits(us), bits & 0xff);
+    }
+    // END ATOMIC PARAMETERS
+
+
     /*
      * Tribe enum. This defines which tribes we can actually have.
      */
     enum Tribe
     {
-    	RED,
-    	BLUE
+    	RED=1,
+    	BLUE,
+    	GREEN,
+    	TRIBE_COUNT
     };
 
   private:
@@ -62,9 +89,27 @@ namespace MFM
   public:
 
     /*
-     * This should be overridden to supply the tribe's color.
+     * This supplies the tribe's color.
      */
-    virtual u32 LocalPhysicsColor(const T& atom, u32 selector) const = 0;
+    virtual u32 LocalPhysicsColor(const T& atom, u32 selector)
+    {
+    	u32 tribeNumber = GetTribeBits(atom);
+    	switch(tribeNumber)
+    	{
+    	case RED:
+    		return 0xFFFF0000;
+    		break;
+    	case BLUE:
+    		return 0xFF00FF00;
+    		break;
+    	case GREEN:
+    		return 0xFF0000FF;
+    		break;
+    	default:
+    		// TODO: Throw an exception.
+    		break;
+    	}
+    }
 
     /**
      * Test the other tribal element to see if it is in the same tribe as this element.
@@ -76,7 +121,8 @@ namespace MFM
     	return false;
     }
 
-    AbstractElement_Tribal(const UUID & uuid) : Element<CC>(uuid)
+    AbstractElement_Tribal(const UUID & uuid) : Element<CC>(uuid),
+    		m_tribe(this,"tribe","Tribe","This is the tribe that this element has.",RED,RED,TRIBE_COUNT-1,1)
     {
     }
   };

@@ -47,6 +47,7 @@ namespace MFM
       NeedElement(&Element_Xtal_General<OurCoreConfig>::THE_INSTANCE);
       NeedElement(&Element_Creg<OurCoreConfig>::THE_INSTANCE);
       NeedElement(&Element_Mine<OurCoreConfig>::THE_INSTANCE);
+      NeedElement(&Element_Base<OurCoreConfig>::THE_INSTANCE);
     }
 
   public:

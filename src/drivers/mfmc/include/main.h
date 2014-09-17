@@ -11,5 +11,6 @@
 #include "Element_Res.h"
 #include "Element_Creg.h"
 #include "Element_Mine.h"
+#include "Element_Base.h"
 
 #endif /* MAIN_H */
