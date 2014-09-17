@@ -110,6 +110,7 @@ namespace MFM
     virtual void Behavior(EventWindow<CC>& window) const
     {
     }
+
   };
 
   /*

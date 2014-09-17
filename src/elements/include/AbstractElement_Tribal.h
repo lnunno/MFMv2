@@ -51,21 +51,11 @@ namespace MFM
     {
         BITS = P::BITS_PER_ATOM,
 
-        BYTE_BITS_LENGTH = 4,
+        BYTE_BITS_LENGTH = 8,
         BYTE_BITS_POSITION = BITS - BYTE_BITS_LENGTH - 1
     };
 
     typedef BitField<BitVector<BITS>, BYTE_BITS_LENGTH, BYTE_BITS_POSITION> AFByteBits;
-
-    u32 GetTribeBits(const T& us) const
-    {
-        return AFByteBits::Read(this->GetBits(us));
-    }
-
-    void SetTribeBits(const T& us, u32 bits) const
-    {
-        AFByteBits::Write(this->GetBits(us), bits & 0xff);
-    }
     // END ATOMIC PARAMETERS
 
 
@@ -88,6 +78,16 @@ namespace MFM
 
   public:
 
+    u32 GetTribeBits(const T& us) const
+	{
+		return AFByteBits::Read(this->GetBits(us));
+	}
+
+	void SetTribeBits(const T& us, u32 bits) const
+	{
+		AFByteBits::Write(this->GetBits(us), bits & 0xff);
+	}
+
     /*
      * This supplies the tribe's color.
      */
@@ -109,6 +109,12 @@ namespace MFM
     		// TODO: Throw an exception.
     		break;
     	}
+    	return 0xFFFF0000;
+    }
+
+    u32 GetSelectedTribe()
+    {
+    	return (u32) m_tribe.GetValue();
     }
 
     /**
@@ -125,6 +131,7 @@ namespace MFM
     		m_tribe(this,"tribe","Tribe","This is the tribe that this element has.",RED,RED,TRIBE_COUNT-1,1)
     {
     }
+
   };
 
 }
