@@ -71,6 +71,7 @@ namespace MFM
       /* <<TEMPLATE>> Set atomic symbol and name for your element. */
       Element<CC>::SetAtomicSymbol("Bs");
       Element<CC>::SetName("Base");
+      AbstractElement_Tribal<CC>::SetElementGradient(0x00110000);
     }
 
     /*
@@ -86,7 +87,7 @@ namespace MFM
     /* <<TEMPLATE>> This color will be the default rendering color for your element. */
     virtual u32 DefaultPhysicsColor() const
     {
-      return 0xFF0000FF;
+      return 0xff0000ff;
     }
 
     /*
@@ -95,7 +96,7 @@ namespace MFM
      */
     virtual u32 DefaultLowlightColor() const
     {
-      return 0xFF0000FF;
+      return 0xff0000ff;
     }
 
     /*

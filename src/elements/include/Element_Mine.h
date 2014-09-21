@@ -89,7 +89,6 @@ namespace MFM
      */
     virtual u32 DefaultLowlightColor() const
     {
-      // TODO: Figure out what color looks good here.
       return 0x99663300;
     }
 

@@ -71,6 +71,7 @@ namespace MFM
     	RED=1,
     	BLUE,
     	GREEN,
+    	YELLOW,
     	TRIBE_COUNT
     };
 
@@ -81,6 +82,32 @@ namespace MFM
   protected:
 
     ElementParameterS32<CC> m_tribe;
+
+    /**
+     * This is the shading of an element from its local tribe color
+     * in order to differentiate elements that are on the same tribe.
+    */
+    u32 m_elementGradient;
+
+    /**
+     * Get the amount that each element should be shaded by.
+     *
+     * It works like so:
+     *
+     * FINAL_COLOR = TRIBE_COLOR + ELEMENT_GRADIENT
+     */
+    u32 GetElementGradient() const
+    {
+    	return m_elementGradient;
+    }
+
+    /**
+     * Set the element gradient.
+     */
+    void SetElementGradient(u32 gradientValue)
+    {
+    	m_elementGradient = gradientValue;
+    }
 
   public:
 
@@ -97,23 +124,27 @@ namespace MFM
     /*
      * This supplies the tribe's color.
      */
-    virtual u32 LocalPhysicsColor(const T& atom, u32 selector)
+    virtual u32 LocalPhysicsColor(const T& atom, u32 selector) const
     {
-    	cout << "LocalPhysicsColor" << endl;
     	u32 tribeNumber = GetTribe(atom);
     	switch(tribeNumber)
     	{
     	case RED:
-    		return 0xFFFF0000;
+    		return 0xFF880000 + GetElementGradient();
     	case BLUE:
-    		return 0xFF00FF00;
+    		return 0xFF008800 + GetElementGradient();
     	case GREEN:
-    		return 0xFF0000FF;
+    		return 0xFF000088 + GetElementGradient();
+    	case YELLOW:
+    		return 0xFF888800 + GetElementGradient();
     	default:
+    		// Shouldn't get here, fail if we do.
     		FAIL(ILLEGAL_STATE);
     		break;
     	}
-    	return 0xFFFF0000;
+    	// Shouldn't get here, fail if we do.
+    	FAIL(ILLEGAL_STATE);
+    	return 0x0;
     }
 
     u32 GetSelectedTribe()
@@ -126,13 +157,14 @@ namespace MFM
      *
      * TODO: Implement
      */
-    bool IsInSameTribe(const AbstractElement_Tribal& otherGuy)
+    bool IsInSameTribe(const AbstractElement_Tribal& us, const AbstractElement_Tribal& otherGuy)
     {
     	return false;
     }
 
     AbstractElement_Tribal(const UUID & uuid) : Element<CC>(uuid),
-    		m_tribe(this,"tribe","Tribe","This is the tribe that this element has.",RED,RED,TRIBE_COUNT-1,1)
+    		m_tribe(this,"tribe","Tribe","This is the tribe that this element has.",RED,RED,TRIBE_COUNT-1,1),
+    		m_elementGradient(0)
     {
     }
 
