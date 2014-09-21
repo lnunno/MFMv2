@@ -57,7 +57,7 @@ namespace MFM
 
     Element_Mine()
       : Element<CC>(MFM_UUID_FOR("Mine", MINE_VERSION)),
-        m_resSpawnOdds(this, "res", "Res Spawn Odds", "The probability that this mine will spawn a Res.", 1, 5, 500, 5)
+        m_resSpawnOdds(this, "spawn", "Res Spawn Odds", "The probability that this mine will spawn a Res.", 1, 5, 500, 5)
     {
       Element<CC>::SetAtomicSymbol("Mn");
       Element<CC>::SetName("Mine");
@@ -72,6 +72,10 @@ namespace MFM
     {
       return 0; // Mines are not movable.
     }
+
+    virtual u32 Diffusability(EventWindow<CC> & ew, SPoint nowAt, SPoint maybeAt) const {
+	  return this->NoDiffusability(ew, nowAt, maybeAt);
+	}
 
     /* <<TEMPLATE>> This color will be the default rendering color for your element. */
     virtual u32 DefaultPhysicsColor() const

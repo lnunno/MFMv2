@@ -33,6 +33,10 @@
 #include "ElementTable.h"
 #include "itype.h"
 #include "BitField.h"
+#include "Fail.h"
+#include <iostream>
+
+using namespace std;
 
 namespace MFM
 {
@@ -55,7 +59,7 @@ namespace MFM
         BYTE_BITS_POSITION = BITS - BYTE_BITS_LENGTH - 1
     };
 
-    typedef BitField<BitVector<BITS>, BYTE_BITS_LENGTH, BYTE_BITS_POSITION> AFByteBits;
+    typedef BitField<BitVector<BITS>, BYTE_BITS_LENGTH, BYTE_BITS_POSITION> TribeBits;
     // END ATOMIC PARAMETERS
 
 
@@ -72,20 +76,22 @@ namespace MFM
 
   private:
 
-    ElementParameterS32<CC> m_tribe;
-
     /* <<TEMPLATE>> Add any configurable parameters here. */
+
+  protected:
+
+    ElementParameterS32<CC> m_tribe;
 
   public:
 
-    u32 GetTribeBits(const T& us) const
+    u32 GetTribe(const T& us) const
 	{
-		return AFByteBits::Read(this->GetBits(us));
+		return TribeBits::Read(this->GetBits(us));
 	}
 
-	void SetTribeBits(const T& us, u32 bits) const
+	void SetTribe(T& us, const u32 tribe) const
 	{
-		AFByteBits::Write(this->GetBits(us), bits & 0xff);
+		TribeBits::Write(this->GetBits(us), tribe & 0xff);
 	}
 
     /*
@@ -93,20 +99,18 @@ namespace MFM
      */
     virtual u32 LocalPhysicsColor(const T& atom, u32 selector)
     {
-    	u32 tribeNumber = GetTribeBits(atom);
+    	cout << "LocalPhysicsColor" << endl;
+    	u32 tribeNumber = GetTribe(atom);
     	switch(tribeNumber)
     	{
     	case RED:
     		return 0xFFFF0000;
-    		break;
     	case BLUE:
     		return 0xFF00FF00;
-    		break;
     	case GREEN:
     		return 0xFF0000FF;
-    		break;
     	default:
-    		// TODO: Throw an exception.
+    		FAIL(ILLEGAL_STATE);
     		break;
     	}
     	return 0xFFFF0000;

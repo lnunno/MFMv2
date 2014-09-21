@@ -34,6 +34,10 @@
 #include "itype.h"
 #include "AbstractElement_Tribal.h"
 
+#include <iostream>
+
+using namespace std;
+
 namespace MFM
 {
 
@@ -102,6 +106,19 @@ namespace MFM
       return "This is a base that creates other units and collects Res.";
     }
 
+    static const u32 TYPE()
+    {
+    	return THE_INSTANCE.GetType();
+    }
+
+    virtual const T& GetDefaultAtom() const
+    {
+    	static T defaultAtom(TYPE(), 0, 0, 0);
+    	u32 tribeValue = this->m_tribe.GetValue();
+    	this->SetTribe(defaultAtom, tribeValue);
+    	return defaultAtom;
+    }
+
     /*
       <<TEMPLATE>> This method is executed every time an atom of your
                    element is chosen for an event. See the tutorial in
@@ -109,6 +126,8 @@ namespace MFM
      */
     virtual void Behavior(EventWindow<CC>& window) const
     {
+    	T self = window.GetCenterAtom();
+//    	u32 tribe = this->GetTribe(self);
     }
 
   };
