@@ -132,9 +132,9 @@ namespace MFM
     	case RED:
     		return 0xFF880000 + GetElementGradient();
     	case BLUE:
-    		return 0xFF008800 + GetElementGradient();
-    	case GREEN:
     		return 0xFF000088 + GetElementGradient();
+    	case GREEN:
+    		return 0xFF008800 + GetElementGradient();
     	case YELLOW:
     		return 0xFF888800 + GetElementGradient();
     	default:
