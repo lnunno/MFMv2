@@ -87,7 +87,7 @@ namespace MFM
      * This is the shading of an element from its local tribe color
      * in order to differentiate elements that are on the same tribe.
     */
-    u32 m_elementGradient;
+    s32 m_elementGradient;
 
     /**
      * Get the amount that each element should be shaded by.
@@ -96,7 +96,7 @@ namespace MFM
      *
      * FINAL_COLOR = TRIBE_COLOR + ELEMENT_GRADIENT
      */
-    u32 GetElementGradient() const
+    s32 GetElementGradient() const
     {
     	return m_elementGradient;
     }
@@ -104,7 +104,7 @@ namespace MFM
     /**
      * Set the element gradient.
      */
-    void SetElementGradient(u32 gradientValue)
+    void SetElementGradient(s32 gradientValue)
     {
     	m_elementGradient = gradientValue;
     }
