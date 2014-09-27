@@ -55,11 +55,13 @@ namespace MFM
     {
         BITS = P::BITS_PER_ATOM,
 
-        BYTE_BITS_LENGTH = 8,
-        BYTE_BITS_POSITION = BITS - BYTE_BITS_LENGTH - 1
+        TRIBE_LENGTH = 8,
+        TRIBE_POSITION = BITS - TRIBE_LENGTH - 1,
+
+        TRIBAL_FIRST_FREE_POSITION = BITS - TRIBE_LENGTH
     };
 
-    typedef BitField<BitVector<BITS>, BYTE_BITS_LENGTH, BYTE_BITS_POSITION> TribeBits;
+    typedef BitField<BitVector<BITS>, TRIBE_LENGTH, TRIBE_POSITION> TribeBitField;
     // END ATOMIC PARAMETERS
 
 
@@ -113,12 +115,12 @@ namespace MFM
 
     u32 GetTribe(const T& us) const
 	{
-		return TribeBits::Read(this->GetBits(us));
+		return TribeBitField::Read(this->GetBits(us));
 	}
 
 	void SetTribe(T& us, const u32 tribe) const
 	{
-		TribeBits::Write(this->GetBits(us), tribe & 0xff);
+		TribeBitField::Write(this->GetBits(us), tribe & 0xff);
 	}
 
     /*
