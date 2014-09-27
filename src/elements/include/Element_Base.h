@@ -74,10 +74,10 @@ namespace MFM
         return GoldBitField::Read(this->GetBits(us));
       }
 
-      void SetGoldCount(T& us, const u32 newGoldCount) const
+      void SetGoldCount(T& us, u32 newGoldCount) const
       {
         cout << "Setting gold count to " << newGoldCount << endl;
-        GoldBitField::Write(this->GetBits(us), newGoldCount & 0xff);
+        GoldBitField::Write(this->GetBits(us), newGoldCount);
         cout << "Current? " << GetGoldCount(us) << endl;
       }
 
@@ -190,6 +190,7 @@ namespace MFM
         static T defaultAtom(TYPE(), 0, 0, 0);
         u32 tribeValue = this->m_tribe.GetValue();
         this->SetTribe(defaultAtom, tribeValue);
+        this->SetGoldCount(defaultAtom,0);
         return defaultAtom;
       }
 

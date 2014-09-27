@@ -72,10 +72,10 @@ namespace MFM
         return TimeAliveField::Read(this->GetBits(us));
       }
 
-      void SetTimeAlive(T& us, const u32 timeAlive) const
+      void SetTimeAlive(T& us, u32 timeAlive) const
       {
         cout << "Set time alive to " << timeAlive << endl;
-        TimeAliveField::Write(this->GetBits(us), timeAlive & 0xf);
+        TimeAliveField::Write(this->GetBits(us), timeAlive);
         cout << "Set? " << this->GetTimeAlive(us) << endl;
       }
 
@@ -164,6 +164,7 @@ namespace MFM
         static T defaultAtom(TYPE(), 0, 0, 0);
         u32 tribeValue = this->m_tribe.GetValue();
         this->SetTribe(defaultAtom, tribeValue);
+        this->SetTimeAlive(defaultAtom,0);
         return defaultAtom;
       }
 
@@ -176,9 +177,8 @@ namespace MFM
       {
         T self = window.GetCenterAtom();
         u32 timeAlive = this->GetTimeAlive(self);
-        u32 newVal = timeAlive + 1;
         cout << "Time alive: " << timeAlive << endl;
-        this->SetTimeAlive(self,newVal);
+        this->SetTimeAlive(self,timeAlive + 1);
         this->Diffuse(window);
       }
 

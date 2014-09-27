@@ -114,7 +114,7 @@ namespace MFM
         return TribeBitField::Read(this->GetBits(us));
       }
 
-      void SetTribe(T& us, const u32 tribe) const
+      void SetTribe(T& us, u32 tribe) const
       {
         TribeBitField::Write(this->GetBits(us), tribe & 0xf);
       }
