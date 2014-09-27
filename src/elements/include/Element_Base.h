@@ -53,7 +53,8 @@ namespace MFM
 
       enum
       {
-        R = P::EVENT_WINDOW_RADIUS, BITS = P::BITS_PER_ATOM,
+        R = P::EVENT_WINDOW_RADIUS,
+        BITS = P::BITS_PER_ATOM,
 
         //////
         // Element state fields.
@@ -80,7 +81,35 @@ namespace MFM
 
       void SetGoldCount(T& us, const u32 goldCount) const
       {
+        cout << "Setting gold count to " << goldCount << endl;
         GoldBitField::Write(this->GetBits(us), goldCount & 0xff);
+        cout << "Current? " << GetGoldCount(us) << endl;
+      }
+
+    private:
+
+      // Some utility functions.
+      u32 GetFirstEmptySpace(EventWindow<CC>& window) const
+      {
+        const MDist<R> md = MDist<R>::get();
+        for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(1); ++idx)
+        {
+          cout << "Index: " << idx << endl;
+          const SPoint rel = md.GetPoint(idx);
+          if (!window.IsLiveSite(rel))
+          {
+            continue;
+          }
+          T other = window.GetRelativeAtom(rel);
+          u32 neighborType = other.GetType();
+          if (neighborType == Element_Empty<CC>::THE_INSTANCE.GetType())
+          {
+            // Found an empty space, return it.
+            return idx;
+          }
+        }
+        // None found, return NULL.
+        return -1;
       }
 
     public:
@@ -176,11 +205,13 @@ namespace MFM
       virtual void Behavior(EventWindow<CC>& window) const
       {
         T self = window.GetCenterAtom();
+        u32 ourTribe = this->GetTribe(self);
+        Random & random = window.GetRandom();
         u32 goldCount = GetGoldCount(self);
-
+        cout << "Current gold count = " << goldCount << endl;
         T empty = Element_Empty<CC>::THE_INSTANCE.GetDefaultAtom();
-
         const MDist<R> md = MDist<R>::get();
+        u32 goldCollected = 0;
 
         // Consume Res loop.
         for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(1); ++idx)
@@ -196,10 +227,34 @@ namespace MFM
           {
             // Consume the res. Set that point as empty.
             window.SetRelativeAtom(rel, empty);
-            goldCount += m_goldPerRes.GetValue();
-            SetGoldCount(self, goldCount);
+            goldCollected += m_goldPerRes.GetValue();
           }
         }
+        goldCount += goldCollected;
+        SetGoldCount(self, goldCount);
+
+        // Creation loop
+        u32 emptyIndex = this->GetFirstEmptySpace(window);
+        if (emptyIndex < 0)
+        {
+          // No space, don't do anything.
+        }
+        else
+        {
+          // First, checks to see if we have enough gold and then rolls the dice.
+
+          // Base creation.
+          if ((goldCount >= m_baseGoldCost.GetValue())
+              && random.OneIn(m_baseCreateOdds.GetValue()))
+          {
+            // Checks passed, create a base.
+            T base = Element_Base<CC>::THE_INSTANCE.GetDefaultAtom();
+            this->SetTribe(base, ourTribe); // Change the tribe to our own.
+            const SPoint& emptySpot = md.GetPoint(emptyIndex);
+            window.SetRelativeAtom(emptySpot, base);
+          }
+        }
+
         // These guys are happy to move around randomly.
         this->Diffuse(window);
       }

@@ -53,11 +53,13 @@ namespace MFM
       // From the atomic parameters tutorial:
       enum
       {
-        R = P::EVENT_WINDOW_RADIUS, BITS = P::BITS_PER_ATOM,
+        R = P::EVENT_WINDOW_RADIUS,
+        BITS = P::BITS_PER_ATOM,
 
-        TRIBE_LENGTH = 4, TRIBE_POSITION = BITS - TRIBE_LENGTH,
+        TRIBE_LENGTH = 4,
+        TRIBE_POSITION = BITS - TRIBE_LENGTH - 1,
 
-        TRIBAL_FIRST_FREE_POSITION = BITS - (TRIBE_LENGTH - 1)
+        TRIBAL_FIRST_FREE_POSITION = BITS - TRIBE_LENGTH
       };
 
       typedef BitField<BitVector<BITS>, TRIBE_LENGTH, TRIBE_POSITION> TribeBitField;
@@ -68,7 +70,11 @@ namespace MFM
        */
       enum Tribe
       {
-        RED = 1, BLUE, GREEN, YELLOW, TRIBE_COUNT
+        RED = 1,
+        BLUE,
+        GREEN,
+        YELLOW,
+        TRIBE_COUNT
       };
 
     private:
@@ -160,11 +166,11 @@ namespace MFM
       }
 
       AbstractElement_Tribal(const UUID & uuid) :
-        Element<CC>(uuid), m_tribe(this, "tribe", "Tribe",
-            "This is the tribe that this element has.", RED, RED,
-            TRIBE_COUNT - 1, 1), m_elementGradient(0)
-            {
-            }
+          Element<CC>(uuid), m_tribe(this, "tribe", "Tribe",
+              "This is the tribe that this element has.", RED, RED,
+              TRIBE_COUNT - 1, 1), m_elementGradient(0)
+      {
+      }
 
   };
 
