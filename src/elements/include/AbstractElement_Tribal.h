@@ -47,18 +47,19 @@ namespace MFM
     // Extract short names for parameter types
     typedef typename CC::ATOM_TYPE T;
     typedef typename CC::PARAM_CONFIG P;
-    enum { R = P::EVENT_WINDOW_RADIUS };
 
+  public:
     // BEGIN ATOMIC PARAMETERS
     // From the atomic parameters tutorial:
     enum
     {
+    	R = P::EVENT_WINDOW_RADIUS,
         BITS = P::BITS_PER_ATOM,
 
-        TRIBE_LENGTH = 8,
-        TRIBE_POSITION = BITS - TRIBE_LENGTH - 1,
+        TRIBE_LENGTH = 4,
+        TRIBE_POSITION = BITS - TRIBE_LENGTH,
 
-        TRIBAL_FIRST_FREE_POSITION = BITS - TRIBE_LENGTH
+        TRIBAL_FIRST_FREE_POSITION = BITS - (TRIBE_LENGTH-1)
     };
 
     typedef BitField<BitVector<BITS>, TRIBE_LENGTH, TRIBE_POSITION> TribeBitField;
@@ -120,7 +121,7 @@ namespace MFM
 
 	void SetTribe(T& us, const u32 tribe) const
 	{
-		TribeBitField::Write(this->GetBits(us), tribe & 0xff);
+		TribeBitField::Write(this->GetBits(us), tribe & 0xf);
 	}
 
     /*

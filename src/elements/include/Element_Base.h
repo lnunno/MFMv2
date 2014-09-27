@@ -49,13 +49,40 @@ namespace MFM
     // Extract short names for parameter types
     typedef typename CC::ATOM_TYPE T;
     typedef typename CC::PARAM_CONFIG P;
-    enum { R = P::EVENT_WINDOW_RADIUS };
+
+    enum
+	{
+    	R = P::EVENT_WINDOW_RADIUS,
+    	BITS = P::BITS_PER_ATOM,
+
+    	//////
+    	// Element state fields.
+
+		GOLD_LENGTH = 8,
+		GOLD_POSITION = AbstractElement_Tribal<CC>::TRIBAL_FIRST_FREE_POSITION - GOLD_LENGTH
+	};
+
+    typedef BitField<BitVector<BITS>, GOLD_LENGTH, GOLD_POSITION> GoldBitField;
 
   private:
 
     ElementParameterS32<CC> m_goldPerRes;
+    ElementParameterS32<CC> m_baseGoldCost;
+    ElementParameterS32<CC> m_baseCreateOdds;
 
-    /* <<TEMPLATE>> Add any configurable parameters here. */
+
+
+  protected:
+    // We don't want the gold field to be accessible to the world.
+    u32 GetGoldCount(const T& us) const
+	{
+		return GoldBitField::Read(this->GetBits(us));
+	}
+
+	void SetGoldCount(T& us, const u32 goldCount) const
+	{
+		GoldBitField::Write(this->GetBits(us), goldCount & 0xff);
+	}
 
   public:
 
@@ -66,7 +93,11 @@ namespace MFM
       : AbstractElement_Tribal<CC>(MFM_UUID_FOR("Base", BASE_VERSION)),
         /* <<TEMPLATE>> Initialize all configurable parameters here. */
         m_goldPerRes(this, "goldPRes", "Gold Per Res",
-                  "The amount of gold produced for each Res collected.", 1, 10, 100, 1)
+                  "The amount of gold produced for each Res collected.", 1, 10, 100, 1),
+        m_baseGoldCost(this, "baseGoldCost", "Base Gold Cost",
+        		  "The cost (in gold) of producing a base.", 1, 5, 100, 1),
+        m_baseCreateOdds(this,"baseCreate", "Base Create Chance",
+        		"The chance that a base will be attempted to be created.", 1, 5, 100, 1)
     {
       /* <<TEMPLATE>> Set atomic symbol and name for your element. */
       Element<CC>::SetAtomicSymbol("Bs");
