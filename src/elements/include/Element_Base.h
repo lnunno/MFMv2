@@ -31,6 +31,7 @@
 #include "Element.h"
 #include "EventWindow.h"
 #include "ElementTable.h"
+#include "Element_Res.h"
 #include "itype.h"
 #include "AbstractElement_Tribal.h"
 
@@ -151,17 +152,60 @@ namespace MFM
       }
 
       /*
-       <<TEMPLATE>> This method is executed every time an atom of your
+       This method is executed every time an atom of your
        element is chosen for an event. See the tutorial in
        the wiki for further information.
+
+       This method is inspired by the Element_Shark Behavior function.
+
+       The loop:
+
+       for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(1); ++idx)
+
+       Looks in the immediate vicinity of this atom (all 8 locations).
+
+       The behavior is as follows:
+
+       - First look around the current window with a radius one for any available Res.
+       - Consume any Res found within the search range and convert them into the appropriate gold amount.
+       - If there are no available empty spaces within the search range, return since we do
+       not have space to create anything new.
+       - For each possible element, if we have enough gold to create an atom of that type,
+       try to create an atom of each type based on the odds for creating that individual type.
        */
       virtual void Behavior(EventWindow<CC>& window) const
       {
         T self = window.GetCenterAtom();
-//    	u32 tribe = this->GetTribe(self);
+        u32 goldCount = GetGoldCount(self);
+
+        T empty = Element_Empty<CC>::THE_INSTANCE.GetDefaultAtom();
+
+        const MDist<R> md = MDist<R>::get();
+
+        // Consume Res loop.
+        for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(1); ++idx)
+        {
+          const SPoint rel = md.GetPoint(idx);
+          if (!window.IsLiveSite(rel))
+          {
+            continue;
+          }
+          T other = window.GetRelativeAtom(rel);
+          u32 neighborType = other.GetType();
+          if (neighborType == Element_Res<CC>::THE_INSTANCE.GetType())
+          {
+            // Consume the res. Set that point as empty.
+            window.SetRelativeAtom(rel, empty);
+            goldCount += m_goldPerRes.GetValue();
+            SetGoldCount(self, goldCount);
+          }
+        }
+        // These guys are happy to move around randomly.
+        this->Diffuse(window);
       }
 
-  };
+  }
+  ;
 
   /*
    <<TEMPLATE>> Rename the class names here to the class name of your element.

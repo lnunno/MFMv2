@@ -160,11 +160,11 @@ namespace MFM
       }
 
       AbstractElement_Tribal(const UUID & uuid) :
-          Element<CC>(uuid), m_tribe(this, "tribe", "Tribe",
-              "This is the tribe that this element has.", RED, RED,
-              TRIBE_COUNT - 1, 1), m_elementGradient(0)
-      {
-      }
+        Element<CC>(uuid), m_tribe(this, "tribe", "Tribe",
+            "This is the tribe that this element has.", RED, RED,
+            TRIBE_COUNT - 1, 1), m_elementGradient(0)
+            {
+            }
 
   };
 
