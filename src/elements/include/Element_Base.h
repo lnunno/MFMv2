@@ -69,8 +69,12 @@ namespace MFM
     private:
 
       ElementParameterS32<CC> m_goldPerRes;
+
       ElementParameterS32<CC> m_baseGoldCost;
       ElementParameterS32<CC> m_baseCreateOdds;
+
+      ElementParameterS32<CC> m_infantryGoldCost;
+      ElementParameterS32<CC> m_infantryCreateOdds;
 
     protected:
       // We don't want the gold field to be accessible to the world.
@@ -127,7 +131,13 @@ namespace MFM
                   "The cost (in gold) of producing a base.", 1, 5, 100, 1),
               m_baseCreateOdds(this, "baseCreate", "Base Create Chance",
                   "The chance that a base will be attempted to be created.", 1,
-                  5, 100, 1)
+                  5, 100, 1),
+              m_infantryGoldCost(this, "infGoldCost", "Infantry Gold Cost",
+                  "The cost (in gold) of producing an infantry unit.", 1, 1, 100, 1),
+              m_infantryCreateOdds(this, "infCreate", "Infantry Create Chance",
+                  "The chance that an infantry unit will be attempted to be created.", 1,
+                  3, 100, 1)
+
       {
         /* <<TEMPLATE>> Set atomic symbol and name for your element. */
         Element<CC>::SetAtomicSymbol("Bs");
