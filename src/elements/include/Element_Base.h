@@ -47,10 +47,12 @@ namespace MFM
   template<class CC>
   class Element_Base: public AbstractElement_Tribal<CC> /* <<TEMPLATE>> Replace class name with yours */
   {
+
       // Extract short names for parameter types
       typedef typename CC::ATOM_TYPE T;
       typedef typename CC::PARAM_CONFIG P;
 
+    public:
       enum
       {
         R = P::EVENT_WINDOW_RADIUS,
@@ -66,6 +68,19 @@ namespace MFM
 
       typedef BitField<BitVector<BITS>, GOLD_LENGTH, GOLD_POSITION> GoldBitField;
 
+      // Bit field operations.
+      u32 GetGoldCount(const T& us) const
+      {
+        return GoldBitField::Read(this->GetBits(us));
+      }
+
+      void SetGoldCount(T& us, const u32 newGoldCount) const
+      {
+        cout << "Setting gold count to " << newGoldCount << endl;
+        GoldBitField::Write(this->GetBits(us), newGoldCount & 0xff);
+        cout << "Current? " << GetGoldCount(us) << endl;
+      }
+
     private:
 
       ElementParameterS32<CC> m_goldPerRes;
@@ -75,20 +90,6 @@ namespace MFM
 
       ElementParameterS32<CC> m_infantryGoldCost;
       ElementParameterS32<CC> m_infantryCreateOdds;
-
-    protected:
-      // We don't want the gold field to be accessible to the world.
-      u32 GetGoldCount(const T& us) const
-      {
-        return GoldBitField::Read(this->GetBits(us));
-      }
-
-      void SetGoldCount(T& us, const u32 goldCount) const
-      {
-        cout << "Setting gold count to " << goldCount << endl;
-        GoldBitField::Write(this->GetBits(us), goldCount & 0xff);
-        cout << "Current? " << GetGoldCount(us) << endl;
-      }
 
     private:
 
@@ -133,10 +134,11 @@ namespace MFM
                   "The chance that a base will be attempted to be created.", 1,
                   5, 100, 1),
               m_infantryGoldCost(this, "infGoldCost", "Infantry Gold Cost",
-                  "The cost (in gold) of producing an infantry unit.", 1, 1, 100, 1),
+                  "The cost (in gold) of producing an infantry unit.", 1, 1,
+                  100, 1),
               m_infantryCreateOdds(this, "infCreate", "Infantry Create Chance",
-                  "The chance that an infantry unit will be attempted to be created.", 1,
-                  3, 100, 1)
+                  "The chance that an infantry unit will be attempted to be created.",
+                  1, 3, 100, 1)
 
       {
         /* <<TEMPLATE>> Set atomic symbol and name for your element. */

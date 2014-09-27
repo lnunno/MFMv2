@@ -49,8 +49,6 @@ namespace MFM
 
     ElementParameterS32<CC> m_resSpawnOdds;
 
-    /* <<TEMPLATE>> Add any configurable parameters here. */
-
   public:
 
     static Element_Mine<CC> THE_INSTANCE;

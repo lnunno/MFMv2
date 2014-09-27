@@ -77,10 +77,6 @@ namespace MFM
         TRIBE_COUNT
       };
 
-    private:
-
-      /* <<TEMPLATE>> Add any configurable parameters here. */
-
     protected:
 
       ElementParameterS32<CC> m_tribe;
