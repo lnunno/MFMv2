@@ -309,13 +309,13 @@ namespace MFM
      * this Element is constructed and an Atom of this Element may be
      * placed.
      *
-     * @sa U16StaticLoader;
+     * @sa StaticLoader;
      */
     void AllocateType()
     {
       if (!m_hasType)
       {
-        m_type = U16StaticLoader::AllocateType(m_UUID);
+        m_type = StaticLoader<CC,16>::AllocateType(m_UUID);
         m_hasType = true;
         m_defaultAtom = BuildDefaultAtom();
       }
@@ -576,6 +576,18 @@ namespace MFM
       return m_atomicParameters;
     }
 
+  };
+
+  template <class CC, u32 R>
+  struct ElementParameterNeighborhood : public Parameters::Neighborhood<R>
+  {
+    ElementParameterNeighborhood(Element<CC> * elt,
+                                 const char * tag,
+                                 const char * name,
+                                 const char * description)
+      : Parameters::Neighborhood<R>(elt->GetElementParameters(), tag, name, description)
+    {
+    }
   };
 
   template <class CC>

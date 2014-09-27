@@ -33,6 +33,7 @@
 #include "AbstractButton.h"
 #include "Slider.h"
 #include "ParameterControllerBool.h"
+#include "NeighborSelectPanel.h"
 
 #define ELEMENT_BOX_SIZE 70
 #define ELEMENT_RENDER_SIZE 32
@@ -52,7 +53,10 @@ namespace MFM
       ELEMENT_BOX_BUTTON_COUNT = 9,
       TOOLBOX_MAX_CONTROLLERS = 20,
       TOOLBOX_MAX_SLIDERS = 8,
-      TOOLBOX_MAX_CHECKBOXES = 8
+      TOOLBOX_MAX_CHECKBOXES = 8,
+      TOOLBOX_MAX_NEIGHBORHOODS = 8,
+
+      R = CC::PARAM_CONFIG::EVENT_WINDOW_RADIUS
     };
 
     /**
@@ -196,7 +200,7 @@ namespace MFM
         m_parent = parent;
       }
 
-      virtual void PaintComponent(Drawing& d)
+      virtual void PaintComponentNonClick(Drawing& d)
       {
         if(m_element)
         {
@@ -276,6 +280,9 @@ namespace MFM
     ParameterControllerBool m_checkboxes[TOOLBOX_MAX_CHECKBOXES];
     u32 m_checkboxCount;
 
+    NeighborSelectPanel<R> m_neighborhoods[TOOLBOX_MAX_NEIGHBORHOODS];
+    u32 m_neighborhoodCount;
+
     u32 m_brushSize;
 
     enum
@@ -337,6 +344,25 @@ namespace MFM
       AddController(&cb);
     }
 
+    void AddNeighborhoodController(Parameters::Neighborhood<R>* np)
+    {
+      MFM_API_ASSERT_NONNULL(np);
+
+      if (m_neighborhoodCount >= TOOLBOX_MAX_NEIGHBORHOODS)
+      {
+        FAIL(OUT_OF_RESOURCES);
+      }
+
+      u32 j = m_neighborhoodCount++;
+
+      NeighborSelectPanel<R>& nb = m_neighborhoods[j];
+
+      nb.SetParameter(np);
+      nb.SetText(np->GetName());
+
+      AddController(&nb);
+    }
+
    public:
 
     ToolboxPanel(EditingTool* toolPtr) :
@@ -377,6 +403,7 @@ namespace MFM
 
       m_sliderCount = 0;
       m_checkboxCount = 0;
+      m_neighborhoodCount = 0;
       for(u32 i = 0; i < totalParms; i++)
       {
         const Parameters::Parameter * parm = parms.GetParameter(i);
@@ -387,6 +414,9 @@ namespace MFM
           break;
         case Parameters::BOOL_PARAMETER:
           AddCheckboxController(Parameters::Bool::Cast(parms.GetParameter(i)));
+          break;
+        case Parameters::NEIGHBORHOOD_PARAMETER:
+          AddNeighborhoodController(Parameters::Neighborhood<R>::Cast(parms.GetParameter(i)));
           break;
         default:
           FAIL(ILLEGAL_STATE);
@@ -409,7 +439,7 @@ namespace MFM
       Panel::SetDesiredSize(6 + ELEMENT_RENDER_SIZE * ELEMENTS_PER_ROW + BORDER_PADDING,
                            rpt.GetY() + BORDER_PADDING);
 
-      this->Print(STDOUT);
+      //debug: this->Print(STDOUT);
 
       // Tell ourselfs to resize (our cheeso repacking)
       HandleResize(this->m_parent->GetDimensions());
@@ -460,6 +490,8 @@ namespace MFM
 
       Panel::SetDimensions(6 + ELEMENT_RENDER_SIZE * ELEMENTS_PER_ROW,
                            6 + ELEMENT_RENDER_SIZE * TOTAL_ROWS);
+      Panel::SetDesiredSize(6 + ELEMENT_RENDER_SIZE * ELEMENTS_PER_ROW,
+                            6 + ELEMENT_RENDER_SIZE * TOTAL_ROWS);
 
       m_activatedButton = m_toolButtons;
       m_toolButtons[0].ToolButton::SetActivated(true);

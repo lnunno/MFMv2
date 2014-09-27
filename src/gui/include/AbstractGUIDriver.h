@@ -68,7 +68,7 @@ namespace MFM
 
 #define STATS_WINDOW_WIDTH 288
 
-#define STATS_START_WINDOW_WIDTH 280
+#define STATS_START_WINDOW_WIDTH STATS_WINDOW_WIDTH  // Why two constants?
 #define STATS_START_WINDOW_HEIGHT 120
 
   /* super speedy for now */
@@ -95,11 +95,8 @@ namespace MFM
     bool m_thisUpdateIsEpoch;
     u32 m_thisEpochAEPS;
     bool m_captureScreenshots;
-    bool m_captureSaveState;
     u32 m_saveStateIndex;
     u32 m_epochSaveStateIndex;
-
-    Fonts m_fonts;
 
     bool m_keyboardPaused;   // Toggled by keyboard space, ' ', SDLK_SPACE
     bool m_singleStep;       // Toggled by Step check box, 's', SDLK_SPACE
@@ -517,11 +514,10 @@ namespace MFM
       if (!getenv("SDL_VIDEO_ALLOW_SCREENSAVER"))          // If user isn't already messing with this
         putenv((char *) "SDL_VIDEO_ALLOW_SCREENSAVER=1");  // Old school sdl 1.2 mechanism
 
-      SDL_Init(SDL_INIT_VIDEO);
+      SDL_Init(SDL_INIT_EVERYTHING);
+      TTF_Init();
 
       SetScreenSize(m_screenWidth, m_screenHeight);
-
-      m_fonts.Init();
 
       m_rootPanel.SetName("Root");
       m_gridPanel.SetBorder(Drawing::BLACK);
@@ -547,7 +543,7 @@ namespace MFM
       m_logPanel.SetDimensions(m_screenWidth, 160);
       m_logPanel.SetDesiredSize(U32_MAX, 160);
       m_logPanel.SetAnchor(ANCHOR_SOUTH);
-      m_logPanel.SetFont(m_fonts.GetDefaultFont(16));
+      m_logPanel.SetFont(AssetManager::Get(FONT_ASSET_LOGGER));
 
       m_toolboxPanel.SetName("Toolbox");
       m_toolboxPanel.SetVisibility(false);
@@ -564,7 +560,7 @@ namespace MFM
 
       m_rootPanel.Print(STDOUT);
 
-      m_srend.OnceOnly(m_fonts);
+      m_srend.OnceOnly();
 
       SDL_WM_SetCaption(MFM_VERSION_STRING_LONG, NULL);
 
@@ -617,6 +613,7 @@ namespace MFM
       m_buttonPanel.InsertButtons();
 
       m_buttonPanel.SetAnchor(ANCHOR_SOUTH);
+      m_buttonPanel.SetAnchor(ANCHOR_EAST);
     }
 
     void Update(OurGrid& grid)
@@ -678,7 +675,7 @@ namespace MFM
       /* View Control */
       if(m_keyboard.SemiAuto(SDLK_a))
       {
-        m_srend.SetDisplayAER(!m_srend.GetDisplayAER());
+        m_srend.SetDisplayAER(1 + m_srend.GetDisplayAER());
       }
       if(m_keyboard.SemiAuto(SDLK_i))
       {
@@ -777,44 +774,6 @@ namespace MFM
       m_keyboard.Flip();
     }
 
-
-#if 0
-    void ExportTimeBasedData(OurGrid& grid)
-    {
-      /* Current header : */
-      /* # AEPS activesites empty dreg res wall sort-hits sort-misses sort-total sort-hit-pctg sort-bucket-miss-average*/
-
-      if(m_recordTimeBasedDataPerAEPS > 0)
-      {
-        if(m_AEPS > m_nextTimeBasedDataAEPS)
-        {
-          const char* path = GetSimDirPathTemporary("tbd/tbd.txt", m_nextEventCountsAEPS);
-          FILE* fp = fopen(path, "a");
-
-          u64 consumed = 0, totalError = 0;
-          for (OurGrid::iterator_type i = grid.begin(); i != grid.end(); ++i) {
-            Tile<CC> * t = *i;
-            consumed += Element_Consumer<CC>::THE_INSTANCE.GetAndResetDatumsConsumed(*t);
-            totalError += Element_Consumer<CC>::THE_INSTANCE.GetAndResetBucketError(*t);
-          }
-
-          fprintf(fp, "%g %d %d %d %d %d %ld %ld\n",
-                  m_AEPS,
-                  grid.CountActiveSites(),
-                  grid.GetAtomCount(Element_Empty<CC>::TYPE),
-                  grid.GetAtomCount(Element_Dreg<CC>::TYPE),
-                  grid.GetAtomCount(Element_Res<CC>::TYPE),
-                  grid.GetAtomCount(Element_Wall<CC>::TYPE),
-                  consumed, totalError);
-
-          fclose(fp);
-          m_nextTimeBasedDataAEPS += m_recordTimeBasedDataPerAEPS;
-        }
-      }
-    }
-#endif
-
-
   public:
 
     void SaveGridWithNextFilename()
@@ -835,7 +794,6 @@ namespace MFM
       m_startPaused(true),
       m_thisUpdateIsEpoch(false),
       m_captureScreenshots(false),
-      m_captureSaveState(false),
       m_saveStateIndex(0),
       m_epochSaveStateIndex(0),
       m_renderStats(false),
@@ -843,7 +801,7 @@ namespace MFM
       m_screenHeight(SCREEN_INITIAL_HEIGHT),
       m_selectedTool(TOOL_SELECTOR),
       m_toolboxPanel(&m_selectedTool),
-      m_buttonPanel(m_fonts)
+      m_buttonPanel()
     { }
 
     ~AbstractGUIDriver()
@@ -904,7 +862,7 @@ namespace MFM
       driver->m_screenWidth = STATS_START_WINDOW_WIDTH;
       driver->m_screenHeight = STATS_START_WINDOW_HEIGHT;
       driver->ToggleStatsView();
-      driver->m_srend.SetDisplayAER(!driver->m_srend.GetDisplayAER());
+      driver->m_srend.SetDisplayAER(driver->m_srend.GetMaxDisplayAER());
     }
 
     static void ConfigMinimalView(const char* not_used, void* driverptr)
@@ -936,13 +894,6 @@ namespace MFM
       driver.m_helpPanel.SetVisibility(false);
     }
 
-    static void SetSaveStatePerAEPSFromArgs(const char* not_used, void* driverptr)
-    {
-      AbstractGUIDriver& driver = *((AbstractGUIDriver*)driverptr);
-
-      driver.m_captureSaveState = true;
-    }
-
     void AddDriverArguments()
     {
       Super::AddDriverArguments();
@@ -963,9 +914,6 @@ namespace MFM
 
       this->RegisterArgument("Help panel is not shown upon startup.",
                              "-n| --nohelp", &DontShowHelpPanelOnStart, this, false);
-
-      this->RegisterArgument("Capture simulator state every epoch",
-                             "-a| --autosave", &SetSaveStatePerAEPSFromArgs, this, false);
     }
 
     EditingTool m_selectedTool;
@@ -1050,15 +998,15 @@ namespace MFM
     struct ButtonPanel : public Panel
     {
       static const u32 MAX_BUTTONS = 16;
-      static const u32 CHECKBOX_SPACING_HEIGHT = 26;
+      static const u32 CHECKBOX_SPACING_HEIGHT = 32;
       static const u32 BUTTON_SPACING_HEIGHT = 34;
-      static const u32 BUTTON_HEIGHT = 20;
-      static const u32 BUTTON_WIDTH = 200;
+      static const u32 BUTTON_HEIGHT = 30;
+      static const u32 BUTTON_WIDTH = STATS_START_WINDOW_WIDTH;
 
       virtual void PaintBorder(Drawing & config)
       { /* No border please */ }
 
-      ButtonPanel(Fonts & fonts) :
+      ButtonPanel() :
         m_checkboxCount(0),
         m_buttonCount(0)
       {
@@ -1073,7 +1021,7 @@ namespace MFM
         */
         SetForeground(Drawing::WHITE);
         SetBackground(Drawing::DARK_PURPLE);
-        SetFont(fonts.GetDefaultFont(20));
+        SetFont(AssetManager::Get(FONT_ASSET_ELEMENT));
       }
 
       void InsertCheckbox(AbstractGridCheckbox* checkbox)
@@ -1181,7 +1129,7 @@ namespace MFM
       m_rootPanel.SetBackground(Drawing::RED);
       m_rootPanel.HandleResize(newDimensions);
 
-      m_rootDrawing.Reset(screen, m_fonts.GetDefaultFont());
+      m_rootDrawing.Reset(screen, AssetManager::Get(FONT_ASSET_ELEMENT));
 
       if(m_renderStats)
       {
@@ -1298,6 +1246,7 @@ namespace MFM
             camera.DrawSurface(screen,path);
           }
           {
+            /*
             const char * path = Super::GetSimDirPathTemporary("tbd/data.dat");
             bool exists = true;
             {
@@ -1313,24 +1262,10 @@ namespace MFM
                                           Super::GetAEPSPerFrame(),
                                           Super::GetOverheadPercent(), true);
             fclose(fp);
+            */
+            AbstractDriver<GC>::WriteTimeBasedData();
           }
 
-          /*
-            // Are we accelerating and not yet up to cruising speed?
-            if (m_countOfScreenshotsPerRate > 0 &&
-                m_recordScreenshotPerAEPS < m_maxRecordScreenshotPerAEPS)
-            {
-
-              // Time to step on it?
-              if (++m_countOfScreenshotsAtThisAEPS > m_countOfScreenshotsPerRate)
-              {
-                ++m_recordScreenshotPerAEPS;
-                m_countOfScreenshotsAtThisAEPS = 0;
-              }
-            }
-
-            m_nextScreenshotAEPS += m_recordScreenshotPerAEPS;
-          */
         }
 
         if(Super::GetHaltAfterAEPS() > 0 &&
@@ -1345,6 +1280,7 @@ namespace MFM
       }
 
       SDL_FreeSurface(screen);
+      TTF_Quit();
       SDL_Quit();
     }
   };

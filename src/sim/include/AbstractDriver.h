@@ -155,6 +155,74 @@ namespace MFM
       m_neededElements[m_neededElementCount++] = element;
     }
 
+    void WriteTimeBasedData(FileByteSink& fp, bool exists)
+    {
+      // Extract short names for parameter types
+      typedef typename GC::CORE_CONFIG CC;
+      typedef typename CC::PARAM_CONFIG P;
+      enum { W = GC::GRID_WIDTH};
+      enum { H = GC::GRID_HEIGHT};
+      enum { R = P::EVENT_WINDOW_RADIUS};
+
+      if(!exists)
+      {
+        fp.Printf("# AEPS AEPS/Frame AER100 Overhead100");
+        for(u32 i = 0; i < m_neededElementCount; i++)
+        {
+          fp.WriteByte(' ');
+          for(const char* p = m_neededElements[i]->GetName(); *p; p++)
+          {
+            if(isspace(*p))
+            {
+              fp.WriteByte('_');
+            }
+            else
+            {
+              fp.WriteByte(*p);
+            }
+          }
+        }
+        fp.Println();
+      }
+
+      fp.Print((u64)GetAEPS());
+      fp.WriteByte(' ');
+      fp.Print(GetAEPSPerFrame());
+      fp.WriteByte(' ');
+      fp.Print((u64)(100.0 * GetAER()));
+      fp.WriteByte(' ');
+      fp.Print((u64)(100.0 * GetOverheadPercent()));
+
+      for(u32 i = 0; i < m_neededElementCount; i++)
+      {
+        fp.WriteByte(' ');
+        fp.Print((u32)GetGrid().GetAtomCount(m_neededElements[i]->GetType()));
+      }
+      fp.Println();
+    }
+
+    void WriteTimeBasedData()
+    {
+      const char* path = GetSimDirPathTemporary("tbd/data.dat");
+      bool exists = true;
+      {
+        FILE* fp = fopen(path, "r");
+        if (!fp)
+        {
+          exists = false;
+        }
+        else
+        {
+          fclose(fp);
+        }
+      }
+      FILE* fp = fopen(path, "a");
+      FileByteSink fbs(fp);
+
+      WriteTimeBasedData(fbs, exists);
+      fclose(fp);
+    }
+
     /**
      * Runs the held Grid and all its associated threads for a brief
      * amount of time, letting about \c m_aepsPerFrame AEPS occur
@@ -408,7 +476,6 @@ namespace MFM
 
     bool m_gridImages;
     bool m_tileImages;
-    //    s32 m_recordTimeBasedDataPerAEPS;
 
     double m_AEPS;
     /**
@@ -535,14 +602,6 @@ namespace MFM
     {
       ((AbstractDriver*)driver)->m_tileImages = 1;
     }
-
-    /*
-    static void SetRecordTimeBasedDataFromArgs(const char* tbdStr, void* driver)
-    {
-      u32 tbdAEPS = atoi(tbdStr);
-      ((AbstractDriver*)driver)->m_recordTimeBasedDataPerAEPS = tbdAEPS;
-    }
-    */
 
     static void SetDataDirFromArgs(const char* dirPath, void* driverPtr)
     {
@@ -743,6 +802,8 @@ namespace MFM
         fclose(fp);
       }
 
+
+
       if (m_autosavePerEpochs > 0 && (epochs % m_autosavePerEpochs) == 0)
       {
         this->AutosaveGrid(epochs);
@@ -867,12 +928,6 @@ namespace MFM
 
       RegisterArgument("Each epoch, write tile AEPS image to per-sim teps/ directory",
                        "--tileImages", &SetTileImages, this, false);
-
-      /*
-      RegisterArgument("Records time based data every ARG aeps",
-                       "-t|--timebd",
-                       &SetRecordTimeBasedDataFromArgs, this, true);
-      */
 
       RegisterArgument("If ARG > 0, Halts after ARG elapsed aeps.",
                        "--haltafteraeps", &SetHaltAfterAEPSFromArgs, this, true);

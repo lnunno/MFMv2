@@ -4,6 +4,7 @@
 #include <ctype.h>    /* For isspace */
 #include <string.h>
 #include "OverflowableCharBufferByteSink.h"
+#include "Version.h"
 
 namespace MFM {
 
@@ -24,47 +25,104 @@ namespace MFM {
     const u32 DETAIL_ROW_HEIGHT = DETAIL_LINE_HEIGHT_PIXELS;
     u32 baseY = 0;
 
-    sprintf(strBuffer, "%8.3f kAEPS", aeps/1000.0);
+    drawing.SetFont(AssetManager::Get(FONT_ASSET_ELEMENT));
+    drawing.SetForeground(Drawing::GREY80);
 
-    drawing.SetFont(m_drawFont);
-    drawing.SetForeground(Drawing::WHITE);
-    drawing.BlitText(strBuffer, Point<u32>(m_drawPoint.GetX(), baseY),
-                     Point<u32>(m_dimensions.GetX(), ROW_HEIGHT));
-    baseY += ROW_HEIGHT;
-
-    if (m_displayAER)
+    do  // So we can break when done
     {
-      drawing.SetFont(m_detailFont);
-      drawing.SetForeground(Drawing::GREY80);
+      if (m_displayAER < 1)
+      {
+        break;
+      }
 
-      sprintf(strBuffer, "%8.3f AER", aer);
-      drawing.BlitText(strBuffer, Point<u32>(m_drawPoint.GetX(), baseY),
-                       Point<u32>(m_dimensions.GetX(), ROW_HEIGHT));
+      SPoint size = drawing.GetTextSize(MFM_VERSION_STRING_SHORT);
+      UPoint loc(MAX(0, ((s32) m_dimensions.GetX())-size.GetX()), baseY);
+
+      drawing.BlitText(MFM_VERSION_STRING_SHORT,
+                       loc,
+                       UPoint(m_dimensions.GetX(), ROW_HEIGHT));
       baseY += DETAIL_ROW_HEIGHT;
 
-      sprintf(strBuffer, "%8.3f %%ovrhd", overhead);
-      drawing.BlitText(strBuffer, Point<u32>(m_drawPoint.GetX(), baseY),
-                       Point<u32>(m_dimensions.GetX(), ROW_HEIGHT));
-      baseY += DETAIL_ROW_HEIGHT;
-
-      sprintf(strBuffer, "%8d/frame", AEPSperFrame);
-      drawing.BlitText(strBuffer, Point<u32>(m_drawPoint.GetX(), baseY),
-                        Point<u32>(m_dimensions.GetX(), ROW_HEIGHT));
-      baseY += DETAIL_ROW_HEIGHT;
+      if (m_displayAER < 2)
+      {
+        break;
+      }
 
       u64 now = Utils::GetDateTimeNow();
-      sprintf(strBuffer, "%d %06d",
+      sprintf(strBuffer, " %d %06d",
               Utils::GetDateFromDateTime(now),
               Utils::GetTimeFromDateTime(now)
               );
-      drawing.BlitText(strBuffer, Point<u32>(m_drawPoint.GetX(), baseY),
-                        Point<u32>(m_dimensions.GetX(), ROW_HEIGHT));
+
+      size = drawing.GetTextSize(strBuffer);
+      loc = UPoint(MAX(0, ((s32) m_dimensions.GetX())-size.GetX()), baseY);
+      drawing.BlitText(strBuffer,
+                       loc,
+                       UPoint(m_dimensions.GetX(), ROW_HEIGHT));
       baseY += DETAIL_ROW_HEIGHT;
 
-      drawing.SetFont(m_drawFont);
-      drawing.SetForeground(Drawing::WHITE);
+      if (m_displayAER < 3)
+      {
+        break;
+      }
+
+      sprintf(strBuffer, "%8.3f AER", aer);
+      size = drawing.GetTextSize(strBuffer);
+      loc = UPoint(MAX(0, ((s32) m_dimensions.GetX())-size.GetX()), baseY);
+      drawing.BlitText(strBuffer,
+                       loc,
+                       UPoint(m_dimensions.GetX(), ROW_HEIGHT));
+      baseY += DETAIL_ROW_HEIGHT;
+
+      if (m_displayAER < 4)
+      {
+        break;
+      }
+
+      sprintf(strBuffer, "%8.3f %%ov", overhead);
+      size = drawing.GetTextSize(strBuffer);
+      loc = UPoint(MAX(0, ((s32) m_dimensions.GetX())-size.GetX()), baseY);
+      drawing.BlitText(strBuffer,
+                       loc,
+                       UPoint(m_dimensions.GetX(), ROW_HEIGHT));
+      baseY += DETAIL_ROW_HEIGHT;
+
+      if (m_displayAER < 5)
+      {
+        break;
+      }
+
+      sprintf(strBuffer, "%8d/frame", AEPSperFrame);
+      size = drawing.GetTextSize(strBuffer);
+      loc = UPoint(MAX(0, ((s32) m_dimensions.GetX())-size.GetX()), baseY);
+      drawing.BlitText(strBuffer,
+                       loc,
+                       UPoint(m_dimensions.GetX(), ROW_HEIGHT));
+      baseY += DETAIL_ROW_HEIGHT;
+
+      if (m_displayAER < 6)
+      {
+        break;
+      }
+
+    } while (0);
+
+    if (m_displayAER > 0)
+    {
+      baseY += ROW_HEIGHT/2;
     }
 
+    drawing.SetFont(AssetManager::Get(FONT_ASSET_ELEMENT));
+    drawing.SetForeground(Drawing::WHITE);
+
+    sprintf(strBuffer, "%8.3f kAEPS", aeps/1000.0);
+
+    drawing.SetFont(AssetManager::Get(FONT_ASSET_ELEMENT));
+    drawing.SetForeground(Drawing::WHITE);
+    drawing.BlitText(strBuffer, Point<u32>(m_drawPoint.GetX(), baseY),
+                     Point<u32>(m_dimensions.GetX(), ROW_HEIGHT));
+
+    baseY += ROW_HEIGHT;
     baseY += ROW_HEIGHT;
 
     sprintf(strBuffer, "%8.3f %%full", grid.GetEmptySitePercentage() * 100);
@@ -90,7 +148,7 @@ namespace MFM {
 
         output.Printf("%2s %s",datavalue.GetZString(), cs->GetLabel());
 
-        drawing.SetFont(m_drawFont);
+        drawing.SetFont(AssetManager::Get(FONT_ASSET_ELEMENT));
         drawing.SetForeground(0xffffffff);
         drawing.BlitText(output.GetZString(), Point<u32>(m_drawPoint.GetX(), baseY),
                          Point<u32>(m_dimensions.GetX(), ROW_HEIGHT));
@@ -104,6 +162,10 @@ namespace MFM {
                                                 double aeps, double aer, u32 AEPSperFrame,
                                                 double overhead, bool endOfEpoch)
   {
+    FAIL(DEPRECATED);
+    /* Use AbstractDriver::WriteTimeBasedData instead. */
+
+    /*
     // Extract short names for parameter types
     typedef typename GC::CORE_CONFIG CC;
     typedef typename CC::PARAM_CONFIG P;
@@ -111,17 +173,26 @@ namespace MFM {
     enum { H = GC::GRID_HEIGHT};
     enum { R = P::EVENT_WINDOW_RADIUS};
 
-    if (writeHeader) {
+    if (writeHeader)
+    {
       fp.Printf("# AEPS AEPSperFrame AER100 pctOvrhd100");
-      for (u32 i = 0; i < m_reportersInUse; ++i) {
+      for (u32 i = 0; i < m_reportersInUse; ++i)
+      {
         const DataReporter * cs = m_reporters[i];
         // What's this for?        if (cs->GetDecimalPlaces() < 0) continue;
 
         // Try to ensure splitting on spaces will get the right number of names
         fp.WriteByte(' ');
-        for (const char * p = cs->GetLabel(); *p; ++p) {
-          if (isspace(*p)) fp.WriteByte('_');
-          else fp.WriteByte(*p);
+        for (const char * p = cs->GetLabel(); *p; ++p)
+        {
+          if (isspace(*p))
+          {
+            fp.WriteByte('_');
+          }
+          else
+          {
+            fp.WriteByte(*p);
+          }
         }
       }
       fp.Println();
@@ -132,16 +203,19 @@ namespace MFM {
     fp.Print(" ");
     fp.Print(AEPSperFrame);
     fp.Print(" ");
-    fp.Printf("%d", (u32) (100.0*aer));
-    fp.Printf("%d", (u32) (100.0*overhead));
+    fp.Print((u64)(100.0 * aer));
+    fp.Print(" ");
+    fp.Print((u64)(100.0 * overhead));
 
-    for (u32 i = 0; i < m_reportersInUse; ++i) {
+    for (u32 i = 0; i < m_reportersInUse; ++i)
+    {
       const DataReporter * cs = m_reporters[i];
       //if (cs->GetDecimalPlaces() < 0) continue;
       fp.Print(" ");
       cs->GetValue(fp, endOfEpoch);
     }
     fp.Println();
+    */
   }
 
 } /* namespace MFM */

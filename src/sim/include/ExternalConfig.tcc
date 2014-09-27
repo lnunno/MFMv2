@@ -87,9 +87,6 @@ namespace MFM
     u32 elems = m_elementRegistry.GetEntryCount();
     char lexOutput[24];
 
-    if (elems > 25)  // Um handle multidigit codes
-      FAIL(INCOMPLETE_CODE);
-
     for(u32 i = 0; i < elems; i++)
     {
       const UUID& uuid = m_elementRegistry.GetEntryUUID(i);
