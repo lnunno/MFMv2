@@ -118,15 +118,16 @@ namespace MFM
       static Element_Base<CC> THE_INSTANCE;
 
       Element_Base() :
-          AbstractElement_Tribal<CC>(MFM_UUID_FOR("Base", BASE_VERSION)),
-          /* <<TEMPLATE>> Initialize all configurable parameters here. */
-          m_goldPerRes(this, "goldPRes", "Gold Per Res",
-              "The amount of gold produced for each Res collected.", 1, 10, 100,
-              1), m_baseGoldCost(this, "baseGoldCost", "Base Gold Cost",
-              "The cost (in gold) of producing a base.", 1, 5, 100, 1), m_baseCreateOdds(
-              this, "baseCreate", "Base Create Chance",
-              "The chance that a base will be attempted to be created.", 1, 5,
-              100, 1)
+              AbstractElement_Tribal<CC>(MFM_UUID_FOR("Base", BASE_VERSION)),
+              /* <<TEMPLATE>> Initialize all configurable parameters here. */
+              m_goldPerRes(this, "goldPRes", "Gold Per Res",
+                  "The amount of gold produced for each Res collected.", 1, 1,
+                  100, 1),
+              m_baseGoldCost(this, "baseGoldCost", "Base Gold Cost",
+                  "The cost (in gold) of producing a base.", 1, 5, 100, 1),
+              m_baseCreateOdds(this, "baseCreate", "Base Create Chance",
+                  "The chance that a base will be attempted to be created.", 1,
+                  5, 100, 1)
       {
         /* <<TEMPLATE>> Set atomic symbol and name for your element. */
         Element<CC>::SetAtomicSymbol("Bs");
@@ -205,14 +206,16 @@ namespace MFM
       virtual void Behavior(EventWindow<CC>& window) const
       {
         T self = window.GetCenterAtom();
-        u32 ourTribe = this->GetTribe(self);
-        Random & random = window.GetRandom();
         u32 goldCount = GetGoldCount(self);
         cout << "Current gold count = " << goldCount << endl;
+        u32 ourTribe = this->GetTribe(self);
+
+        Random & random = window.GetRandom();
+
         T empty = Element_Empty<CC>::THE_INSTANCE.GetDefaultAtom();
         const MDist<R> md = MDist<R>::get();
-        u32 goldCollected = 0;
 
+        u32 goldCollected = 0;
         // Consume Res loop.
         for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(1); ++idx)
         {
@@ -241,6 +244,9 @@ namespace MFM
         }
         else
         {
+
+          const SPoint& emptySpot = md.GetPoint(emptyIndex);
+
           // First, checks to see if we have enough gold and then rolls the dice.
 
           // Base creation.
@@ -250,7 +256,6 @@ namespace MFM
             // Checks passed, create a base.
             T base = Element_Base<CC>::THE_INSTANCE.GetDefaultAtom();
             this->SetTribe(base, ourTribe); // Change the tribe to our own.
-            const SPoint& emptySpot = md.GetPoint(emptyIndex);
             window.SetRelativeAtom(emptySpot, base);
           }
         }
