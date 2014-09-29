@@ -74,9 +74,7 @@ namespace MFM
 
       void SetTimeAlive(T& us, u32 timeAlive) const
       {
-        cout << "Set time alive to " << timeAlive << endl;
         TimeAliveField::Write(this->GetBits(us), timeAlive);
-        cout << "Set? " << this->GetTimeAlive(us) << endl;
       }
 
     public:
@@ -151,7 +149,6 @@ namespace MFM
       {
         T self = window.GetCenterAtom();
         u32 timeAlive = this->GetTimeAlive(self);
-        cout << "Time alive: " << timeAlive << endl;
         this->SetTimeAlive(self,timeAlive + 1);
         window.SetCenterAtom(self);
         this->Diffuse(window);

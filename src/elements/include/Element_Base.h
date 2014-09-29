@@ -32,6 +32,7 @@
 #include "EventWindow.h"
 #include "ElementTable.h"
 #include "Element_Res.h"
+#include "Element_Infantry.h"
 #include "itype.h"
 #include "AbstractElement_Tribal.h"
 
@@ -187,7 +188,7 @@ namespace MFM
         static T defaultAtom(TYPE(), 0, 0, 0);
         u32 tribeValue = this->m_tribe.GetValue();
         this->SetTribe(defaultAtom, tribeValue);
-        this->SetGoldCount(defaultAtom,0);
+        this->SetGoldCount(defaultAtom, 0);
         return defaultAtom;
       }
 
@@ -245,7 +246,9 @@ namespace MFM
         goldCount += goldCollected;
         SetGoldCount(self, goldCount);
 
+        // TODO: Abstract this stuff into a method.
         // Creation loop
+
         u32 emptyIndex = this->GetFirstEmptySpace(window);
         if (emptyIndex < 0)
         {
@@ -253,7 +256,6 @@ namespace MFM
         }
         else
         {
-
           const SPoint& emptySpot = md.GetPoint(emptyIndex);
 
           // First, checks to see if we have enough gold and then rolls the dice.
@@ -270,8 +272,31 @@ namespace MFM
           }
         }
 
+        emptyIndex = this->GetFirstEmptySpace(window);
+        if (emptyIndex < 0)
+        {
+          // No space, don't do anything.
+        }
+        else
+        {
+          const SPoint& emptySpot = md.GetPoint(emptyIndex);
+
+          // First, checks to see if we have enough gold and then rolls the dice.
+
+          // Infantry creation.
+          if ((goldCount >= m_infantryGoldCost.GetValue())
+              && random.OneIn(m_infantryCreateOdds.GetValue()))
+          {
+            // Checks passed, create the unit.
+            T newUnit = Element_Infantry<CC>::THE_INSTANCE.GetDefaultAtom();
+            this->SetTribe(newUnit, ourTribe); // Change the tribe to our own.
+            window.SetRelativeAtom(emptySpot, newUnit);
+            goldCount -= m_infantryGoldCost.GetValue(); // Decrement the cost.
+          }
+        }
+
         // Update gold count.
-        SetGoldCount(self,goldCount);
+        SetGoldCount(self, goldCount);
 
         // Update any changes made to myself to the window.
         window.SetCenterAtom(self);
