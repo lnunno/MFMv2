@@ -59,7 +59,7 @@ namespace MFM
         TRIBE_LENGTH = 4,
         TRIBE_POSITION = BITS - TRIBE_LENGTH - 1,
 
-        TRIBAL_FIRST_FREE_POSITION = BITS - TRIBE_LENGTH
+        TRIBAL_FIRST_FREE_POSITION = BITS - TRIBE_LENGTH - 1
       };
 
       typedef BitField<BitVector<BITS>, TRIBE_LENGTH, TRIBE_POSITION> TribeBitField;

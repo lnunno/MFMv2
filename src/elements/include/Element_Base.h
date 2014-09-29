@@ -76,9 +76,7 @@ namespace MFM
 
       void SetGoldCount(T& us, u32 newGoldCount) const
       {
-//        cout << "Setting gold count to " << newGoldCount << endl;
         GoldBitField::Write(this->GetBits(us), newGoldCount);
-//        cout << "Current? " << GetGoldCount(us) << endl;
       }
 
     private:
@@ -219,7 +217,6 @@ namespace MFM
       {
         T self = window.GetCenterAtom();
         u32 goldCount = GetGoldCount(self);
-//        cout << "Current gold count = " << goldCount << endl;
         u32 ourTribe = this->GetTribe(self);
 
         Random & random = window.GetRandom();
@@ -269,8 +266,15 @@ namespace MFM
             T base = Element_Base<CC>::THE_INSTANCE.GetDefaultAtom();
             this->SetTribe(base, ourTribe); // Change the tribe to our own.
             window.SetRelativeAtom(emptySpot, base);
+            goldCount -= m_baseGoldCost.GetValue(); // Decrement the cost.
           }
         }
+
+        // Update gold count.
+        SetGoldCount(self,goldCount);
+
+        // Update any changes made to myself to the window.
+        window.SetCenterAtom(self);
 
         // These guys are happy to move around randomly.
         this->Diffuse(window);

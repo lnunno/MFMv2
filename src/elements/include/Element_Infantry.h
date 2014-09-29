@@ -153,6 +153,7 @@ namespace MFM
         u32 timeAlive = this->GetTimeAlive(self);
         cout << "Time alive: " << timeAlive << endl;
         this->SetTimeAlive(self,timeAlive + 1);
+        window.SetCenterAtom(self);
         this->Diffuse(window);
       }
 
