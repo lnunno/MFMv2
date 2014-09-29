@@ -76,9 +76,9 @@ namespace MFM
 
       void SetGoldCount(T& us, u32 newGoldCount) const
       {
-        cout << "Setting gold count to " << newGoldCount << endl;
+//        cout << "Setting gold count to " << newGoldCount << endl;
         GoldBitField::Write(this->GetBits(us), newGoldCount);
-        cout << "Current? " << GetGoldCount(us) << endl;
+//        cout << "Current? " << GetGoldCount(us) << endl;
       }
 
     private:
@@ -99,7 +99,6 @@ namespace MFM
         const MDist<R> md = MDist<R>::get();
         for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(1); ++idx)
         {
-          cout << "Index: " << idx << endl;
           const SPoint rel = md.GetPoint(idx);
           if (!window.IsLiveSite(rel))
           {
@@ -220,7 +219,7 @@ namespace MFM
       {
         T self = window.GetCenterAtom();
         u32 goldCount = GetGoldCount(self);
-        cout << "Current gold count = " << goldCount << endl;
+//        cout << "Current gold count = " << goldCount << endl;
         u32 ourTribe = this->GetTribe(self);
 
         Random & random = window.GetRandom();

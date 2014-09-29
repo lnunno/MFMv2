@@ -79,32 +79,6 @@ namespace MFM
         cout << "Set? " << this->GetTimeAlive(us) << endl;
       }
 
-    private:
-
-      // Some utility functions.
-      u32 GetFirstEmptySpace(EventWindow<CC>& window) const
-      {
-        const MDist<R> md = MDist<R>::get();
-        for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(1); ++idx)
-        {
-          cout << "Index: " << idx << endl;
-          const SPoint rel = md.GetPoint(idx);
-          if (!window.IsLiveSite(rel))
-          {
-            continue;
-          }
-          T other = window.GetRelativeAtom(rel);
-          u32 neighborType = other.GetType();
-          if (neighborType == Element_Empty<CC>::THE_INSTANCE.GetType())
-          {
-            // Found an empty space, return it.
-            return idx;
-          }
-        }
-        // None found, return NULL.
-        return -1;
-      }
-
     public:
 
       /* <<TEMPLATE>> Replace class name with yours. Don't forget the '<CC>'. */
