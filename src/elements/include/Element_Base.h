@@ -93,7 +93,7 @@ namespace MFM
     private:
 
       // Some utility functions.
-      u32 GetFirstEmptySpace(EventWindow<CC>& window) const
+      s32 GetFirstEmptySpace(EventWindow<CC>& window) const
       {
         const MDist<R> md = MDist<R>::get();
         for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(1); ++idx)
@@ -216,6 +216,7 @@ namespace MFM
        */
       virtual void Behavior(EventWindow<CC>& window) const
       {
+        SPoint centerPt = SPoint(0, 0);
         T self = window.GetCenterAtom();
         u32 goldCount = GetGoldCount(self);
         u32 ourTribe = this->GetTribe(self);
@@ -249,7 +250,7 @@ namespace MFM
         // TODO: Abstract this stuff into a method.
         // Creation loop
 
-        u32 emptyIndex = this->GetFirstEmptySpace(window);
+        s32 emptyIndex = this->GetFirstEmptySpace(window);
         if (emptyIndex < 0)
         {
           // No space, don't do anything.
@@ -298,11 +299,23 @@ namespace MFM
         // Update gold count.
         SetGoldCount(self, goldCount);
 
-        // Update any changes made to myself to the window.
-        window.SetCenterAtom(self);
+        //// Base movement.
+        SPoint movePt = centerPt;
+        md.FillRandomSingleDir(movePt, random);
 
-        // These guys are happy to move around randomly.
-        this->Diffuse(window);
+        if (window.GetRelativeAtom(movePt).GetType()
+            == Element_Empty<CC>::THE_INSTANCE.GetType())
+        {
+          // Move to this location.
+          window.SwapAtoms(movePt, centerPt);
+        }
+        else
+        {
+          movePt = centerPt;
+        }
+        // Update any changes made to myself to the window.
+        window.SetRelativeAtom(movePt, self);
+
       }
 
   }
