@@ -80,6 +80,7 @@ namespace MFM
 
     private:
       ElementParameterS32<CC> m_moveDirectionChangeOdds;
+      ElementParameterS32<CC> m_killOdds;
     public:
 
       /* <<TEMPLATE>> Replace class name with yours. Don't forget the '<CC>'. */
@@ -88,10 +89,12 @@ namespace MFM
       Element_Infantry() :
               AbstractElement_Tribal<CC>(
                   MFM_UUID_FOR("Infantry", INFANTRY_VERSION)),
-              m_moveDirectionChangeOdds(this, "movChng",
-                  "Direction Change Odds",
+              m_moveDirectionChangeOdds(this, "movChng", "Dir Change Odds",
                   "The probability that this unit will change its movement direction.",
-                  1, 10, 100, 1)
+                  1, 10, 100, 1),
+              m_killOdds(this, "killOdds", "Kill Odds",
+                  "The probability that this unit will kill an enemy unit.", 1,
+                  5, 1000, 5)
       {
         /* <<TEMPLATE>> Set atomic symbol and name for your element. */
         Element<CC>::SetAtomicSymbol("In");
@@ -153,10 +156,37 @@ namespace MFM
        */
       virtual void Behavior(EventWindow<CC>& window) const
       {
-        SPoint movePt;
+        // Where this atom is going to move. Initialized to the center (its current position).
+        SPoint centerPt = SPoint(0, 0);
+        SPoint movePt = SPoint(0, 0);
         T self = window.GetCenterAtom();
-
+        u32 ourTribe = this->GetTribe(self);
+        T empty = Element_Empty<CC>::THE_INSTANCE.GetDefaultAtom();
+        const MDist<R> md = MDist<R>::get();
         Random & rand = window.GetRandom();
+
+        for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(1); ++idx)
+        {
+          const SPoint rel = md.GetPoint(idx);
+          if (!window.IsLiveSite(rel))
+          {
+            continue;
+          }
+          T other = window.GetRelativeAtom(rel);
+          const u32 neighborType = other.GetType();
+          const Element<CC> * elt = window.GetTile().GetElement(neighborType);
+          if (dynamic_cast<const AbstractElement_Tribal<CC>*>(elt)
+              && this->GetTribe(other) != ourTribe)
+          {
+            // We see an enemy unit! Enter kill mode!
+            if (rand.OneIn(m_killOdds.GetValue()))
+            {
+              // Kill roll is successful. Kill that mofo!
+              window.SetRelativeAtom(rel, empty);
+            }
+          }
+        }
+
         if (rand.OneIn(m_moveDirectionChangeOdds.GetValue()))
         {
           // Change direction.
@@ -168,16 +198,17 @@ namespace MFM
 
         Dirs::FillDir(movePt, movementDirection);
 
-        if (window.IsLiveSite(movePt))
+        if (window.GetRelativeAtom(movePt).GetType()
+            == Element_Empty<CC>::THE_INSTANCE.GetType())
         {
-          if (window.GetRelativeAtom(movePt).GetType()
-              == Element_Empty<CC>::THE_INSTANCE.GetType())
-          {
-            // Move to this location.
-            window.SwapAtoms(movePt, SPoint(0, 0));
-            window.SetRelativeAtom(movePt, self); // Update self.
-          }
+          // Move to this location.
+          window.SwapAtoms(movePt, centerPt);
         }
+        else
+        {
+          movePt = centerPt;
+        }
+        window.SetRelativeAtom(movePt, self); // Update self.
       }
 
   }
