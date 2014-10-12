@@ -34,6 +34,7 @@
 #include "Element_Res.h"
 #include "itype.h"
 #include "AbstractElement_Tribal.h"
+#include "Dirs.h"
 
 #include <iostream>
 
@@ -59,24 +60,26 @@ namespace MFM
 
         //////
         // Element state fields.
+        MOVE_DIR_LENGTH = (Dirs::DIR_COUNT >> 1) - 1,
+        MOVE_DIR_POSITION = AbstractElement_Tribal<CC>::TRIBAL_FIRST_FREE_POSITION
+            - MOVE_DIR_LENGTH
 
-        TIME_ALIVE_LENGTH = 4,
-        TIME_ALIVE_POSITION = AbstractElement_Tribal<CC>::TRIBAL_FIRST_FREE_POSITION
-            - TIME_ALIVE_LENGTH
       };
 
-      typedef BitField<BitVector<BITS>, TIME_ALIVE_LENGTH, TIME_ALIVE_POSITION> TimeAliveField;
+      typedef BitField<BitVector<BITS>, MOVE_DIR_LENGTH, MOVE_DIR_POSITION> MoveDirectionField;
 
-      u32 GetTimeAlive(const T& us) const
+      Dir GetMovementDirection(const T& us) const
       {
-        return TimeAliveField::Read(this->GetBits(us));
+        return (Dir) MoveDirectionField::Read(this->GetBits(us));
       }
 
-      void SetTimeAlive(T& us, u32 timeAlive) const
+      void SetMovementDirection(T& us, Dir moveDirection) const
       {
-        TimeAliveField::Write(this->GetBits(us), timeAlive);
+        MoveDirectionField::Write(this->GetBits(us), moveDirection);
       }
 
+    private:
+      ElementParameterS32<CC> m_moveDirectionChangeOdds;
     public:
 
       /* <<TEMPLATE>> Replace class name with yours. Don't forget the '<CC>'. */
@@ -84,8 +87,11 @@ namespace MFM
 
       Element_Infantry() :
               AbstractElement_Tribal<CC>(
-                  MFM_UUID_FOR("Infantry", INFANTRY_VERSION))
-
+                  MFM_UUID_FOR("Infantry", INFANTRY_VERSION)),
+              m_moveDirectionChangeOdds(this, "movChng",
+                  "Direction Change Odds",
+                  "The probability that this unit will change its movement direction.",
+                  1, 10, 100, 1)
       {
         /* <<TEMPLATE>> Set atomic symbol and name for your element. */
         Element<CC>::SetAtomicSymbol("In");
@@ -136,7 +142,7 @@ namespace MFM
         static T defaultAtom(TYPE(), 0, 0, 0);
         u32 tribeValue = this->m_tribe.GetValue();
         this->SetTribe(defaultAtom, tribeValue);
-        this->SetTimeAlive(defaultAtom,0);
+        this->SetMovementDirection(defaultAtom, Dirs::EAST);
         return defaultAtom;
       }
 
@@ -147,11 +153,31 @@ namespace MFM
        */
       virtual void Behavior(EventWindow<CC>& window) const
       {
+        SPoint movePt;
         T self = window.GetCenterAtom();
-        u32 timeAlive = this->GetTimeAlive(self);
-        this->SetTimeAlive(self,timeAlive + 1);
-        window.SetCenterAtom(self);
-        this->Diffuse(window);
+
+        Random & rand = window.GetRandom();
+        if (rand.OneIn(m_moveDirectionChangeOdds.GetValue()))
+        {
+          // Change direction.
+          Dir newDirection = (Dir) rand.Create(Dirs::DIR_COUNT);
+          this->SetMovementDirection(self, newDirection);
+        }
+
+        Dir movementDirection = this->GetMovementDirection(self);
+
+        Dirs::FillDir(movePt, movementDirection);
+
+        if (window.IsLiveSite(movePt))
+        {
+          if (window.GetRelativeAtom(movePt).GetType()
+              == Element_Empty<CC>::THE_INSTANCE.GetType())
+          {
+            // Move to this location.
+            window.SwapAtoms(movePt, SPoint(0, 0));
+            window.SetRelativeAtom(movePt, self); // Update self.
+          }
+        }
       }
 
   }
