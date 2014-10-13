@@ -99,7 +99,7 @@ namespace MFM
         /* <<TEMPLATE>> Set atomic symbol and name for your element. */
         Element<CC>::SetAtomicSymbol("In");
         Element<CC>::SetName("Infantry");
-        AbstractElement_Tribal<CC>::SetElementGradient(0x00001100);
+        AbstractElement_Tribal<CC>::SetElementGradient(0x00123456);
       }
 
       /*
@@ -202,7 +202,6 @@ namespace MFM
             == Element_Empty<CC>::THE_INSTANCE.GetType()
             && window.IsLiveSite(movePt))
         {
-          cout << "Moving to empty" << endl;
           // Move to this location.
           window.SwapAtoms(movePt, centerPt);
         }

@@ -123,6 +123,8 @@ namespace MFM
        * Get a count of elements in the event window that share the same
        * tribal type as the passed in atom.
        *
+       * range: The width of the event window to look for atoms.
+       * self:  An atom of the appropriate tribe.
        * elementType: The element type to count.
        */
       u32 GetTribalElementCount(EventWindow<CC>& window, u32 range, T self,
