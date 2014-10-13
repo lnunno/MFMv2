@@ -119,6 +119,41 @@ namespace MFM
         TribeBitField::Write(this->GetBits(us), tribe & 0xf);
       }
 
+      /**
+       * Get a count of elements in the event window that share the same
+       * tribal type as the passed in atom.
+       *
+       * elementType: The element type to count.
+       */
+      u32 GetTribalElementCount(EventWindow<CC>& window, u32 range, T self,
+          u32 elementType) const
+      {
+        const MDist<R> md = MDist<R>::get();
+        u32 ourTribe = this->GetTribe(self);
+        u32 elementCount = 0;
+
+        // Loop that examines the entire event window.
+        for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(range); ++idx)
+        {
+          const SPoint rel = md.GetPoint(idx);
+          if (!window.IsLiveSite(rel))
+          {
+            continue;
+          }
+          T other = window.GetRelativeAtom(rel);
+          u32 neighborType = other.GetType();
+          const Element<CC> * element = window.GetTile().GetElement(
+              neighborType);
+          if (dynamic_cast<const AbstractElement_Tribal<CC>*>(element)
+              && this->GetTribe(other) == ourTribe
+              && neighborType == elementType)
+          {
+            elementCount++;
+          }
+        }
+        return elementCount;
+      }
+
       /*
        * This supplies the tribe's color.
        */
@@ -162,9 +197,11 @@ namespace MFM
       }
 
       AbstractElement_Tribal(const UUID & uuid) :
-          Element<CC>(uuid), m_tribe(this, "tribe", "Tribe",
-              "This is the tribe that this element has.", RED, RED,
-              TRIBE_COUNT - 1, 1), m_elementGradient(0)
+              Element<CC>(uuid),
+              m_tribe(this, "tribe", "Tribe",
+                  "This is the tribe that this element has.", RED, RED,
+                  TRIBE_COUNT - 1, 1),
+              m_elementGradient(0)
       {
       }
 

@@ -199,8 +199,10 @@ namespace MFM
         Dirs::FillDir(movePt, movementDirection);
 
         if (window.GetRelativeAtom(movePt).GetType()
-            == Element_Empty<CC>::THE_INSTANCE.GetType())
+            == Element_Empty<CC>::THE_INSTANCE.GetType()
+            && window.IsLiveSite(movePt))
         {
+          cout << "Moving to empty" << endl;
           // Move to this location.
           window.SwapAtoms(movePt, centerPt);
         }

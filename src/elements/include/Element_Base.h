@@ -90,6 +90,18 @@ namespace MFM
       ElementParameterS32<CC> m_infantryGoldCost;
       ElementParameterS32<CC> m_infantryCreateOdds;
 
+      /**
+       * This is the factor in which the Base is happy to stay where it
+       * is if other Bases of the same tribe surround it.
+       */
+      static const u32 CONSTRUCT_STABILITY = 8;
+
+      /**
+       * This is the radius which the atom looks in its event window
+       * for CONSTRUCT_STABILITY.
+       */
+      static const u32 STABILITY_RANGE = 3; // This must be <= R.
+
     private:
 
       // Some utility functions.
@@ -211,7 +223,7 @@ namespace MFM
        - Consume any Res found within the search range and convert them into the appropriate gold amount.
        - If there are no available empty spaces within the search range, return since we do
        not have space to create anything new.
-       - For each possible element, if we have enough gold to create an atom of that type,
+       - For each possible Tribal unit element, if we have enough gold to create an atom of that type,
        try to create an atom of each type based on the odds for creating that individual type.
        */
       virtual void Behavior(EventWindow<CC>& window) const
@@ -220,11 +232,15 @@ namespace MFM
         T self = window.GetCenterAtom();
         u32 goldCount = GetGoldCount(self);
         u32 ourTribe = this->GetTribe(self);
+        u32 baseType = this->THE_INSTANCE.GetType();
 
         Random & random = window.GetRandom();
 
         T empty = Element_Empty<CC>::THE_INSTANCE.GetDefaultAtom();
         const MDist<R> md = MDist<R>::get();
+
+        u32 friendlyBaseCount = this->GetTribalElementCount(window, STABILITY_RANGE, self,
+            baseType); // # of bases that we are next to.
 
         u32 goldCollected = 0;
         // Consume Res loop.
@@ -242,6 +258,11 @@ namespace MFM
             // Consume the res. Set that point as empty.
             window.SetRelativeAtom(rel, empty);
             goldCollected += m_goldPerRes.GetValue();
+          }
+          else if (neighborType == baseType
+              && this->GetTribe(other) == ourTribe)
+          {
+            friendlyBaseCount++;
           }
         }
         goldCount += goldCollected;
@@ -304,10 +325,26 @@ namespace MFM
         md.FillRandomSingleDir(movePt, random);
 
         if (window.GetRelativeAtom(movePt).GetType()
-            == Element_Empty<CC>::THE_INSTANCE.GetType())
+            == Element_Empty<CC>::THE_INSTANCE.GetType()
+            && window.IsLiveSite(movePt))
         {
-          // Move to this location.
-          window.SwapAtoms(movePt, centerPt);
+          bool shouldSwap = true; // Whether the base should move.
+          if (friendlyBaseCount >= 1)
+          {
+            u32 swapOdds = CONSTRUCT_STABILITY * friendlyBaseCount;
+            shouldSwap = random.OneIn(swapOdds);
+          }
+
+          if (shouldSwap)
+          {
+            // Move to this location.
+            window.SwapAtoms(movePt, centerPt);
+          }
+          else
+          {
+            movePt = centerPt;
+          }
+
         }
         else
         {
