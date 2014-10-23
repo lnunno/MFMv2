@@ -94,22 +94,12 @@ namespace MFM
                   1, 10, 100, 1),
               m_killOdds(this, "killOdds", "Kill Odds",
                   "The probability that this unit will kill an enemy unit.", 1,
-                  5, 1000, 5)
+                  5, 100, 5)
       {
         /* <<TEMPLATE>> Set atomic symbol and name for your element. */
         Element<CC>::SetAtomicSymbol("In");
         Element<CC>::SetName("Infantry");
         AbstractElement_Tribal<CC>::SetElementGradient(0x00123456);
-      }
-
-      /*
-       <<TEMPLATE>> Set how likely your element is to be moved by another element. See
-       Element.h for details.
-       */
-      virtual u32 PercentMovable(const T& you, const T& me,
-          const SPoint& offset) const
-      {
-        return 0;
       }
 
       /* <<TEMPLATE>> This color will be the default rendering color for your element. */
@@ -160,23 +150,21 @@ namespace MFM
         SPoint centerPt = SPoint(0, 0);
         SPoint movePt = SPoint(0, 0);
         T self = window.GetCenterAtom();
-        u32 ourTribe = this->GetTribe(self);
         T empty = Element_Empty<CC>::THE_INSTANCE.GetDefaultAtom();
         const MDist<R> md = MDist<R>::get();
         Random & rand = window.GetRandom();
 
         for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(1); ++idx)
         {
-          const SPoint rel = md.GetPoint(idx);
+          SPoint rel = md.GetPoint(idx);
           if (!window.IsLiveSite(rel))
           {
             continue;
           }
           T other = window.GetRelativeAtom(rel);
-          const u32 neighborType = other.GetType();
-          const Element<CC> * elt = window.GetTile().GetElement(neighborType);
-          if (dynamic_cast<const AbstractElement_Tribal<CC>*>(elt)
-              && this->GetTribe(other) != ourTribe)
+          bool isTribal = this->IsTribal(window, rel);
+          bool sameTribe = isTribal && (!this->IsInSameTribe(self, window, rel));
+          if (isTribal && sameTribe)
           {
             // We see an enemy unit! Enter kill mode!
             if (rand.OneIn(m_killOdds.GetValue()))
@@ -198,9 +186,12 @@ namespace MFM
 
         Dirs::FillDir(movePt, movementDirection);
 
-        if (window.GetRelativeAtom(movePt).GetType()
-            == Element_Empty<CC>::THE_INSTANCE.GetType()
-            && window.IsLiveSite(movePt))
+        const T& moveAtom = window.GetRelativeAtom(movePt);
+
+        // We're ok with swapping with empty atoms or atoms of the same tribe type.
+        bool isSwappable = this->ShouldSwap(moveAtom,self);
+
+        if (isSwappable && window.IsLiveSite(movePt))
         {
           // Move to this location.
           window.SwapAtoms(movePt, centerPt);

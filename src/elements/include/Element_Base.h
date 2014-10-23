@@ -94,13 +94,13 @@ namespace MFM
        * This is the factor in which the Base is happy to stay where it
        * is if other Bases of the same tribe surround it.
        */
-      static const u32 CONSTRUCT_STABILITY = 8;
+      static const u32 CONSTRUCT_STABILITY = 10;
 
       /**
        * This is the radius which the atom looks in its event window
        * for CONSTRUCT_STABILITY.
        */
-      static const u32 STABILITY_RANGE = 3; // This must be <= R.
+      static const u32 STABILITY_RANGE = 2; // This must be <= R.
 
     private:
 
@@ -155,16 +155,6 @@ namespace MFM
         Element<CC>::SetAtomicSymbol("Bs");
         Element<CC>::SetName("Base");
         AbstractElement_Tribal<CC>::SetElementGradient(0x00110000);
-      }
-
-      /*
-       <<TEMPLATE>> Set how likely your element is to be moved by another element. See
-       Element.h for details.
-       */
-      virtual u32 PercentMovable(const T& you, const T& me,
-          const SPoint& offset) const
-      {
-        return 0;
       }
 
       /* <<TEMPLATE>> This color will be the default rendering color for your element. */

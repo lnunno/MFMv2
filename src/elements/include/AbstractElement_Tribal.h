@@ -34,7 +34,9 @@
 #include "itype.h"
 #include "BitField.h"
 #include "Fail.h"
+#include "Element_Wall.h"
 #include <iostream>
+#include <set>
 
 using namespace std;
 
@@ -135,7 +137,8 @@ namespace MFM
         u32 elementCount = 0;
 
         // Loop that examines the entire event window.
-        for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(range); ++idx)
+        for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(range);
+            ++idx)
         {
           const SPoint rel = md.GetPoint(idx);
           if (!window.IsLiveSite(rel))
@@ -188,14 +191,97 @@ namespace MFM
       }
 
       /**
-       * Test the other tribal element to see if it is in the same tribe as this element.
-       *
-       * TODO: Implement
+       * Check if an atom is tribal.
        */
-      bool IsInSameTribe(const AbstractElement_Tribal& us,
-          const AbstractElement_Tribal& otherGuy)
+      bool IsTribal(const T& atom) const
       {
-        return false;
+        // TODO: This is a bad hack and it probably doesn't work right..
+        // but we are desperate.
+        return this->GetTribe(atom) > 0;
+      }
+
+      /**
+       * Test the point in the event window to see if it contains a tribal element.
+       */
+      bool IsTribal(EventWindow<CC>& window, SPoint& rel) const
+      {
+        T other = window.GetRelativeAtom(rel);
+        const u32 neighborType = other.GetType();
+        const Element<CC> * elt = window.GetTile().GetElement(neighborType);
+        if (dynamic_cast<const AbstractElement_Tribal<CC>*>(elt))
+        {
+          return true;
+        }
+        else
+        {
+          return false;
+        }
+      }
+
+      bool IsInSameTribe(const T& you, const T& me) const
+      {
+        if (!this->IsTribal(you) || !this->IsTribal(me))
+        {
+          return false;
+        }
+        else
+        {
+          return this->GetTribe(you) == this->GetTribe(me);
+        }
+      }
+
+      /**
+       * Test the other tribal atom to see if it is in the same tribe as this atom.
+       *
+       */
+      bool IsInSameTribe(T& self, EventWindow<CC>& window, SPoint& rel) const
+      {
+        if (!this->IsTribal(window, rel))
+        {
+          return false;
+        }
+        u32 ourTribe = this->GetTribe(self);
+        T other = window.GetRelativeAtom(rel);
+        return ourTribe == this->GetTribe(other);
+      }
+
+      /**
+       * Used for inspecting whether or not this tribal atom is free to move an adjacent atom.
+       */
+      bool ShouldSwap(const T& you, const T& me) const
+      {
+        // Elements that should not be swapped by tribal atoms.
+        u32 sa[] =
+        { Element_Wall<CC>::THE_INSTANCE.GetType() };
+        set<u32> nonSwappables(sa, sa + 1);
+        u32 yourType = you.GetType();
+        if (this->IsTribal(you) && this->IsTribal(me))
+        {
+          // We're cool with it if we're in the same tribe, otherwise we are vehemently against it.
+          return this->IsInSameTribe(you, me) ? true : false;
+        }
+        else
+        {
+          return nonSwappables.count(yourType) == 0;
+        }
+      }
+
+      /*
+       <<TEMPLATE>> Set how likely your element is to be moved by another element. See
+       Element.h for details.
+       */
+      virtual u32 PercentMovable(const T& you, const T& me,
+          const SPoint& offset) const
+      {
+
+        if (this->IsTribal(you) && this->IsTribal(me))
+        {
+          // We're cool with it if we're in the same tribe, otherwise we are vehemently against it.
+          u32 percentMovable = this->IsInSameTribe(you, me) ? 100 : 0;
+          return percentMovable;
+        }
+        // By default we don't care if people move us.
+        return 100;
       }
 
       AbstractElement_Tribal(const UUID & uuid) :
