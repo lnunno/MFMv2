@@ -91,10 +91,10 @@ namespace MFM
                   MFM_UUID_FOR("Infantry", INFANTRY_VERSION)),
               m_moveDirectionChangeOdds(this, "movChng", "Dir Change Odds",
                   "The probability that this unit will change its movement direction.",
-                  1, 10, 100, 1),
+                  1, 10, 100, 10),
               m_killOdds(this, "killOdds", "Kill Odds",
                   "The probability that this unit will kill an enemy unit.", 1,
-                  5, 100, 5)
+                  4, 10, 2)
       {
         /* <<TEMPLATE>> Set atomic symbol and name for your element. */
         Element<CC>::SetAtomicSymbol("In");

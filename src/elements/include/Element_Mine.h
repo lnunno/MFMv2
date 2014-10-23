@@ -61,7 +61,7 @@ namespace MFM
       Element_Mine() :
               Element<CC>(MFM_UUID_FOR("Mine", MINE_VERSION)),
               m_resSpawnOdds(this, "spawn", "Res Spawn Odds",
-                  "The probability that this mine will spawn a Res.", 1, 5, 500,
+                  "The probability that this mine will spawn a Res.", 1, 5, 50,
                   5),
               m_exhaustionRate(this, "exhaust", "Exhaustion Rate",
                   "The rate at which a mine gets exhausted.", 1, 1, 10,

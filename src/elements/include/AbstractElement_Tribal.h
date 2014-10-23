@@ -252,7 +252,7 @@ namespace MFM
       {
         // Elements that should not be swapped by tribal atoms.
         u32 sa[] =
-        { Element_Wall<CC>::THE_INSTANCE.GetType() };
+        { Element_Wall<CC>::TYPE() };
         set<u32> nonSwappables(sa, sa + 1);
         u32 yourType = you.GetType();
         if (this->IsTribal(you) && this->IsTribal(me))

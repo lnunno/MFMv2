@@ -136,19 +136,19 @@ namespace MFM
               AbstractElement_Tribal<CC>(MFM_UUID_FOR("Base", BASE_VERSION)),
               /* <<TEMPLATE>> Initialize all configurable parameters here. */
               m_goldPerRes(this, "goldPRes", "Gold Per Res",
-                  "The amount of gold produced for each Res collected.", 1, 1,
-                  100, 1),
+                  "The amount of gold produced for each Res collected.", 1, 5,
+                  10, 1),
               m_baseGoldCost(this, "baseGoldCost", "Base Gold Cost",
-                  "The cost (in gold) of producing a base.", 1, 5, 100, 1),
+                  "The cost (in gold) of producing a base.", 1, 5, 10, 1),
               m_baseCreateOdds(this, "baseCreate", "Base Create Chance",
                   "The chance that a base will be attempted to be created.", 1,
-                  5, 100, 1),
+                  5, 100, 5),
               m_infantryGoldCost(this, "infGoldCost", "Infantry Gold Cost",
                   "The cost (in gold) of producing an infantry unit.", 1, 1,
-                  100, 1),
+                  10, 1),
               m_infantryCreateOdds(this, "infCreate", "Infantry Create Chance",
                   "The chance that an infantry unit will be attempted to be created.",
-                  1, 3, 100, 1)
+                  1, 3, 10, 1)
 
       {
         /* <<TEMPLATE>> Set atomic symbol and name for your element. */
@@ -229,8 +229,8 @@ namespace MFM
         T empty = Element_Empty<CC>::THE_INSTANCE.GetDefaultAtom();
         const MDist<R> md = MDist<R>::get();
 
-        u32 friendlyBaseCount = this->GetTribalElementCount(window, STABILITY_RANGE, self,
-            baseType); // # of bases that we are next to.
+        u32 friendlyBaseCount = this->GetTribalElementCount(window,
+            STABILITY_RANGE, self, baseType); // # of bases that we are next to.
 
         u32 goldCollected = 0;
         // Consume Res loop.
@@ -314,11 +314,11 @@ namespace MFM
         SPoint movePt = centerPt;
         md.FillRandomSingleDir(movePt, random);
 
-        if (window.GetRelativeAtom(movePt).GetType()
-            == Element_Empty<CC>::THE_INSTANCE.GetType()
-            && window.IsLiveSite(movePt))
+        const T& moveAtom = window.GetRelativeAtom(movePt);
+        bool shouldSwap = this->ShouldSwap(moveAtom, self); // Whether the base should move.
+
+        if (shouldSwap && window.IsLiveSite(movePt))
         {
-          bool shouldSwap = true; // Whether the base should move.
           if (friendlyBaseCount >= 1)
           {
             u32 swapOdds = CONSTRUCT_STABILITY * friendlyBaseCount;
