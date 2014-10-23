@@ -45,3 +45,6 @@ tools/cpplint.py
 src/elements/include/Element_City_*
 src/elements/src/Element_City_*
 src/drivers/mfmcity
+
+# Python .gitignore
+__pycache__
