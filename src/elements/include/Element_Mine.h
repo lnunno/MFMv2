@@ -87,8 +87,8 @@ namespace MFM
               m_resSpawnOdds(this, "spawn", "Res Spawn Odds",
                   "The probability that this mine will spawn a Res.", 1, 5, 50,
                   5),
-              m_exhaustionRate(this, "exhaust", "Exhaustion Rate",
-                  "The rate at which a mine gets exhausted.", 1, 4, 10, 1),
+              m_exhaustionRate(this, "exhaust", "Exhaustion Chance",
+                  "The rate at which a mine gets exhausted.", 1, 100, 500, 25),
               m_diffuseChance(this, "diffChance", "Diffusal Chance",
                   "The chance for the mine to diffuse.", 1, 10, 100, 10)
       {
