@@ -31,6 +31,9 @@
 #include "EventWindow.h"
 #include "ElementTable.h"
 #include "itype.h"
+#include <iostream>
+
+using namespace std;
 
 namespace MFM
 {
@@ -45,14 +48,35 @@ namespace MFM
       typedef typename CC::PARAM_CONFIG P;
       enum
       {
-        R = P::EVENT_WINDOW_RADIUS
+        R = P::EVENT_WINDOW_RADIUS,
+        BITS = P::BITS_PER_ATOM,
+
+        //////
+        // Element state fields.
+        EXHAUST_COUNTER_LENGTH = 20,
+        EXHAUST_COUNTER_POSITION = AbstractElement_Tribal<CC>::TRIBAL_FIRST_FREE_POSITION
+            - EXHAUST_COUNTER_LENGTH
+
       };
+
+      typedef BitField<BitVector<BITS>, EXHAUST_COUNTER_LENGTH,
+          EXHAUST_COUNTER_POSITION> ExhaustField;
+
+      u32 GetExhaustCount(const T& us) const
+      {
+        return ExhaustField::Read(this->GetBits(us));
+      }
+
+      void SetExhaustCount(T& us, u32 newCount) const
+      {
+        ExhaustField::Write(this->GetBits(us), newCount);
+      }
 
     private:
 
-//      ElementParameterS32<CC> m_availRes;
       ElementParameterS32<CC> m_resSpawnOdds;
       ElementParameterS32<CC> m_exhaustionRate;
+      ElementParameterS32<CC> m_diffuseChance;
 
     public:
 
@@ -64,8 +88,9 @@ namespace MFM
                   "The probability that this mine will spawn a Res.", 1, 5, 50,
                   5),
               m_exhaustionRate(this, "exhaust", "Exhaustion Rate",
-                  "The rate at which a mine gets exhausted.", 1, 1, 10,
-                  5)
+                  "The rate at which a mine gets exhausted.", 1, 4, 10, 1),
+              m_diffuseChance(this, "diffChance", "Diffusal Chance",
+                  "The chance for the mine to diffuse.", 1, 10, 100, 10)
       {
         Element<CC>::SetAtomicSymbol("Mn");
         Element<CC>::SetName("Mine");
@@ -110,6 +135,18 @@ namespace MFM
         return "A producer of Res. Stationary.";
       }
 
+      static const u32 TYPE()
+      {
+        return THE_INSTANCE.GetType();
+      }
+
+      virtual const T& GetDefaultAtom() const
+      {
+        static T defaultAtom(TYPE(), 0, 0, 0);
+        this->SetExhaustCount(defaultAtom, 1);
+        return defaultAtom;
+      }
+
       /*
        <<TEMPLATE>> This method is executed every time an atom of your
        element is chosen for an event. See the tutorial in
@@ -120,6 +157,10 @@ namespace MFM
        */
       virtual void Behavior(EventWindow<CC>& window) const
       {
+        SPoint centerPt = SPoint(0, 0);
+        T self = window.GetCenterAtom();
+        u32 exhaustCounter = this->GetExhaustCount(self);
+
         const MDist<R> md = MDist<R>::get();
         Random& random = window.GetRandom();
 
@@ -127,19 +168,35 @@ namespace MFM
         MDist<R>::get().FillRandomSingleDir(dir, random);
 
         T atom = window.GetRelativeAtom(dir);
-        u32 oldType = atom.GetType();
-        if (Element_Empty<CC>::THE_INSTANCE.IsType(oldType))
+        u32 atomType = atom.GetType();
+        if (Element_Empty<CC>::THE_INSTANCE.IsType(atomType))
         {
           // Only do actions on empty elements.
 
+          u32 spawnChance = m_resSpawnOdds.GetValue() * exhaustCounter;
           // Do a random roll to see if we should create a Res.
-          if (random.OneIn(m_resSpawnOdds.GetValue()))
+          if (random.OneIn(spawnChance))
           {
             // Create the Res here.
             atom = Element_Res<CC>::THE_INSTANCE.GetDefaultAtom();
             window.SetRelativeAtom(dir, atom);
+
+            u32 exhaustChance = m_exhaustionRate.GetValue();
+            if (random.OneIn(exhaustChance))
+            {
+              u32 a = exhaustCounter / 10;
+              u32 incr = (a > 1) ? a : 1;
+
+              // Increment exhaustion counter.
+              this->SetExhaustCount(self, exhaustCounter + incr);
+            }
           }
           // Else we didn't get lucky, don't do anything.
+        }
+        window.SetCenterAtom(self); // Update myself.
+        if (random.OneIn(m_diffuseChance.GetValue()))
+        {
+          this->Diffuse(window);
         }
       }
   };
