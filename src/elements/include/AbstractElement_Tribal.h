@@ -64,7 +64,7 @@ namespace MFM
         TRIBAL_FIRST_FREE_POSITION = BITS - TRIBE_LENGTH - 1
       };
 
-      typedef BitField<BitVector<BITS>, TRIBE_LENGTH, TRIBE_POSITION> TribeBitField;
+      typedef BitField<BitVector<BITS>, VD::U32, TRIBE_LENGTH, TRIBE_POSITION> TribeBitField;
       // END ATOMIC PARAMETERS
 
       /*
@@ -132,7 +132,7 @@ namespace MFM
       u32 GetTribalElementCount(EventWindow<CC>& window, u32 range, T self,
           u32 elementType) const
       {
-        const MDist<R> md = MDist<R>::get();
+        const MDist<R>& md = MDist<R>::get();
         u32 ourTribe = this->GetTribe(self);
         u32 elementCount = 0;
 
@@ -288,7 +288,7 @@ namespace MFM
               Element<CC>(uuid),
               m_tribe(this, "tribe", "Tribe",
                   "This is the tribe that this element has.", RED, RED,
-                  TRIBE_COUNT - 1, 1),
+                  TRIBE_COUNT - 1),
               m_elementGradient(0)
       {
       }

@@ -67,7 +67,7 @@ namespace MFM
             - GOLD_LENGTH
       };
 
-      typedef BitField<BitVector<BITS>, GOLD_LENGTH, GOLD_POSITION> GoldBitField;
+      typedef BitField<BitVector<BITS>, VD::U32, GOLD_LENGTH, GOLD_POSITION> GoldBitField;
 
       // Bit field operations.
       u32 GetGoldCount(const T& us) const
@@ -107,7 +107,7 @@ namespace MFM
       // Some utility functions.
       s32 GetFirstEmptySpace(EventWindow<CC>& window) const
       {
-        const MDist<R> md = MDist<R>::get();
+        const MDist<R>& md = MDist<R>::get();
         for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(1); ++idx)
         {
           const SPoint rel = md.GetPoint(idx);
@@ -137,18 +137,18 @@ namespace MFM
               /* <<TEMPLATE>> Initialize all configurable parameters here. */
               m_goldPerRes(this, "goldPRes", "Gold Per Res",
                   "The amount of gold produced for each Res collected.", 1, 5,
-                  10, 1),
+                  10),
               m_baseGoldCost(this, "baseGoldCost", "Base Gold Cost",
-                  "The cost (in gold) of producing a base.", 1, 5, 10, 1),
+                  "The cost (in gold) of producing a base.", 1, 5, 10),
               m_baseCreateOdds(this, "baseCreate", "Base Create Chance",
                   "The chance that a base will be attempted to be created.", 1,
-                  5, 100, 5),
+                  5, 100),
               m_infantryGoldCost(this, "infGoldCost", "Infantry Gold Cost",
                   "The cost (in gold) of producing an infantry unit.", 1, 1,
-                  10, 1),
+                  10),
               m_infantryCreateOdds(this, "infCreate", "Infantry Create Chance",
                   "The chance that an infantry unit will be attempted to be created.",
-                  1, 3, 10, 1)
+                  1, 3, 10)
 
       {
         /* <<TEMPLATE>> Set atomic symbol and name for your element. */
@@ -227,7 +227,7 @@ namespace MFM
         Random & random = window.GetRandom();
 
         T empty = Element_Empty<CC>::THE_INSTANCE.GetDefaultAtom();
-        const MDist<R> md = MDist<R>::get();
+        const MDist<R>& md = MDist<R>::get();
 
         u32 friendlyBaseCount = this->GetTribalElementCount(window,
             STABILITY_RANGE, self, baseType); // # of bases that we are next to.

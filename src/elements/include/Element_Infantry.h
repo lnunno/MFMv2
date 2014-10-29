@@ -66,7 +66,7 @@ namespace MFM
 
       };
 
-      typedef BitField<BitVector<BITS>, MOVE_DIR_LENGTH, MOVE_DIR_POSITION> MoveDirectionField;
+      typedef BitField<BitVector<BITS>, VD::U32, MOVE_DIR_LENGTH, MOVE_DIR_POSITION> MoveDirectionField;
 
       Dir GetMovementDirection(const T& us) const
       {
@@ -91,10 +91,10 @@ namespace MFM
                   MFM_UUID_FOR("Infantry", INFANTRY_VERSION)),
               m_moveDirectionChangeOdds(this, "movChng", "Dir Change Odds",
                   "The probability that this unit will change its movement direction.",
-                  1, 10, 500, 10),
+                  1, 10, 500),
               m_killOdds(this, "killOdds", "Kill Odds",
                   "The probability that this unit will kill an enemy unit.", 1,
-                  4, 10, 2)
+                  4, 10)
       {
         /* <<TEMPLATE>> Set atomic symbol and name for your element. */
         Element<CC>::SetAtomicSymbol("In");
@@ -151,7 +151,7 @@ namespace MFM
         SPoint movePt = SPoint(0, 0);
         T self = window.GetCenterAtom();
         T empty = Element_Empty<CC>::THE_INSTANCE.GetDefaultAtom();
-        const MDist<R> md = MDist<R>::get();
+        const MDist<R>& md = MDist<R>::get();
         Random & rand = window.GetRandom();
 
         for (u32 idx = md.GetFirstIndex(1); idx <= md.GetLastIndex(1); ++idx)

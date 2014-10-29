@@ -59,7 +59,7 @@ namespace MFM
 
       };
 
-      typedef BitField<BitVector<BITS>, EXHAUST_COUNTER_LENGTH,
+      typedef BitField<BitVector<BITS>, VD::U32, EXHAUST_COUNTER_LENGTH,
           EXHAUST_COUNTER_POSITION> ExhaustField;
 
       u32 GetExhaustCount(const T& us) const
@@ -85,12 +85,11 @@ namespace MFM
       Element_Mine() :
               Element<CC>(MFM_UUID_FOR("Mine", MINE_VERSION)),
               m_resSpawnOdds(this, "spawn", "Res Spawn Odds",
-                  "The probability that this mine will spawn a Res.", 1, 5, 50,
-                  5),
+                  "The probability that this mine will spawn a Res.", 1, 5, 50),
               m_exhaustionRate(this, "exhaust", "Exhaustion Chance",
-                  "The rate at which a mine gets exhausted.", 1, 100, 500, 25),
+                  "The rate at which a mine gets exhausted.", 1, 100, 500),
               m_diffuseChance(this, "diffChance", "Diffusal Chance",
-                  "The chance for the mine to diffuse.", 1, 10, 100, 10)
+                  "The chance for the mine to diffuse.", 1, 10, 100)
       {
         Element<CC>::SetAtomicSymbol("Mn");
         Element<CC>::SetName("Mine");
@@ -161,11 +160,11 @@ namespace MFM
         T self = window.GetCenterAtom();
         u32 exhaustCounter = this->GetExhaustCount(self);
 
-        const MDist<R> md = MDist<R>::get();
+        const MDist<R>& md = MDist<R>::get();
         Random& random = window.GetRandom();
 
         SPoint dir;
-        MDist<R>::get().FillRandomSingleDir(dir, random);
+        md.FillRandomSingleDir(dir, random);
 
         T atom = window.GetRelativeAtom(dir);
         u32 atomType = atom.GetType();
