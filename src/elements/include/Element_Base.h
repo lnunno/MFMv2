@@ -140,13 +140,13 @@ namespace MFM
                   10),
               m_baseGoldCost(this, "baseGoldCost", "Base Gold Cost",
                   "The cost (in gold) of producing a base.", 1, 5, 10),
-              m_baseCreateOdds(this, "baseCreate", "Base Create Chance",
+              m_baseCreateOdds(this, "baseCreate", "Base Create Odds",
                   "The chance that a base will be attempted to be created.", 1,
                   5, 100),
               m_infantryGoldCost(this, "infGoldCost", "Infantry Gold Cost",
                   "The cost (in gold) of producing an infantry unit.", 1, 1,
                   10),
-              m_infantryCreateOdds(this, "infCreate", "Infantry Create Chance",
+              m_infantryCreateOdds(this, "infCreate", "Infantry Create Odds",
                   "The chance that an infantry unit will be attempted to be created.",
                   1, 3, 10)
 
