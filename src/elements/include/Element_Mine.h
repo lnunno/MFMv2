@@ -86,10 +86,10 @@ namespace MFM
               Element<CC>(MFM_UUID_FOR("Mine", MINE_VERSION)),
               m_resSpawnOdds(this, "spawn", "Res Spawn Odds",
                   "The probability that this mine will spawn a Res.", 1, 5, 50),
-              m_exhaustionRate(this, "exhaust", "Exhaustion Chance",
+              m_exhaustionRate(this, "exhaust", "Exhaustion Odds",
                   "The rate at which a mine gets exhausted.", 1, 100, 500),
-              m_diffuseChance(this, "diffChance", "Diffusal Chance",
-                  "The chance for the mine to diffuse.", 1, 10, 100)
+              m_diffuseChance(this, "diffChance", "Diffusal Odds",
+                  "The probability that a mine will diffuse through the environment.", 1, 10, 100)
       {
         Element<CC>::SetAtomicSymbol("Mn");
         Element<CC>::SetName("Mine");
