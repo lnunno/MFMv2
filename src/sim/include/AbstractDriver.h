@@ -886,6 +886,14 @@ namespace MFM
       m_startTimeMS = GetTicks();
 
       OnceOnly(m_varguments);
+
+      // Create the header of the csv file.
+      const char* path = GetSimDirPathTemporary("tbd/tribe_counts.csv");
+      FILE* fp = fopen(path, "a");
+
+      fprintf(fp,
+          "Epochs,Epoch AEPS,Res Count,Red Base Count,Red Infantry Count,Red Total Count,Blue Base Count,Blue Infantry Count,Blue Total Count\n");
+      fclose(fp);
     }
 
     VArguments & GetVArguments()
