@@ -30,6 +30,7 @@
 #include "Element.h"
 #include "EventWindow.h"
 #include "ElementTable.h"
+#include "Element_Base.h"
 #include "itype.h"
 #include <iostream>
 
@@ -76,7 +77,6 @@ namespace MFM
 
       ElementParameterS32<CC> m_resSpawnOdds;
       ElementParameterS32<CC> m_exhaustionRate;
-      ElementParameterS32<CC> m_diffuseChance;
 
     public:
 
@@ -87,9 +87,7 @@ namespace MFM
               m_resSpawnOdds(this, "spawn", "Res Spawn Odds",
                   "The probability that this mine will spawn a Res.", 1, 5, 50),
               m_exhaustionRate(this, "exhaust", "Exhaustion Odds",
-                  "The rate at which a mine gets exhausted.", 1, 100, 500),
-              m_diffuseChance(this, "diffChance", "Diffusal Odds",
-                  "The probability that a mine will diffuse through the environment.", 1, 10, 100)
+                  "The rate at which a mine gets exhausted.", 1, 100, 500)
       {
         Element<CC>::SetAtomicSymbol("Mn");
         Element<CC>::SetName("Mine");
@@ -168,13 +166,12 @@ namespace MFM
 
         T atom = window.GetRelativeAtom(dir);
         u32 atomType = atom.GetType();
+        u32 spawnChance = m_resSpawnOdds.GetValue() * exhaustCounter;
+        bool shouldSpawn = random.OneIn(spawnChance);
         if (Element_Empty<CC>::THE_INSTANCE.IsType(atomType))
         {
-          // Only do actions on empty elements.
 
-          u32 spawnChance = m_resSpawnOdds.GetValue() * exhaustCounter;
-          // Do a random roll to see if we should create a Res.
-          if (random.OneIn(spawnChance))
+          if (shouldSpawn)
           {
             // Create the Res here.
             atom = Element_Res<CC>::THE_INSTANCE.GetDefaultAtom();
@@ -192,11 +189,23 @@ namespace MFM
           }
           // Else we didn't get lucky, don't do anything.
         }
-        window.SetCenterAtom(self); // Update myself.
-        if (random.OneIn(m_diffuseChance.GetValue()))
+        else if (atomType == Element_Base<CC>::TYPE())
         {
-          this->Diffuse(window);
+          // TODO: How should we handle this? We can't access the base's internals directly.
+
+          // This is a base.
+          if (shouldSpawn)
+          {
+            // Give this base the res.
+            Element_Base<CC>::THE_INSTANCE.IncrementGoldCount(atom);
+
+            // Update the base in the event window.
+            window.SetRelativeAtom(dir,atom);
+          }
+
         }
+
+        window.SetCenterAtom(self); // Update myself.
       }
   };
 

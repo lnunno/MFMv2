@@ -80,6 +80,15 @@ namespace MFM
         GoldBitField::Write(this->GetBits(us), newGoldCount);
       }
 
+      /**
+       * Increment the gold count of this base by the gold per res amount.
+       */
+      void IncrementGoldCount(T& base){
+        u32 oldCount = this->GetGoldCount(base);
+        u32 newCount = oldCount + m_goldPerRes.GetValue();
+        this->SetGoldCount(base, newCount);
+      }
+
     private:
 
       ElementParameterS32<CC> m_goldPerRes;

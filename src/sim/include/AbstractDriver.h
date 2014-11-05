@@ -699,6 +699,12 @@ namespace MFM
     }
 
   public:
+
+    const char * GetSimulationBasePath() const
+    {
+      return &m_simDirBasePath[0];
+    }
+
     void AutosaveGrid(u32 epochs)
     {
       const char* filename =
