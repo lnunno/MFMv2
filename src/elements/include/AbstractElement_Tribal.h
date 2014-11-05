@@ -34,7 +34,8 @@
 #include "itype.h"
 #include "BitField.h"
 #include "Fail.h"
-#include "Element_Wall.h"
+#include "Element_Res.h"
+#include "Element_Data.h"
 #include <iostream>
 #include <set>
 
@@ -250,10 +251,10 @@ namespace MFM
        */
       bool ShouldSwap(const T& you, const T& me) const
       {
-        // Elements that should not be swapped by tribal atoms.
+        // Elements that can be swapped by tribal atoms.
         u32 sa[] =
-        { Element_Wall<CC>::TYPE() };
-        set<u32> nonSwappables(sa, sa + 1);
+        { Element_Res<CC>::TYPE(), Element_Data<CC>::TYPE() };
+        set<u32> swappables(sa, sa + 1);
         u32 yourType = you.GetType();
         if (this->IsTribal(you) && this->IsTribal(me))
         {
@@ -262,7 +263,7 @@ namespace MFM
         }
         else
         {
-          return nonSwappables.count(yourType) == 0;
+          return swappables.count(yourType) > 0;
         }
       }
 

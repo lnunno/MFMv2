@@ -49,6 +49,7 @@ namespace MFM
   class Element_Infantry: public AbstractElement_Tribal<CC> /* <<TEMPLATE>> Replace class name with yours */
   {
     public:
+
       // Extract short names for parameter types
       typedef typename CC::ATOM_TYPE T;
       typedef typename CC::PARAM_CONFIG P;
