@@ -36,6 +36,7 @@
 #include "Fail.h"
 #include "Element_Res.h"
 #include "Element_Data.h"
+#include "Element_Empty.h"
 #include <iostream>
 #include <set>
 
@@ -253,7 +254,7 @@ namespace MFM
       {
         // Elements that can be swapped by tribal atoms.
         u32 sa[] =
-        { Element_Res<CC>::TYPE(), Element_Data<CC>::TYPE() };
+        { Element_Empty<CC>::THE_INSTANCE.GetType(), Element_Res<CC>::TYPE(), Element_Data<CC>::TYPE() };
         set<u32> swappables(sa, sa + 1);
         u32 yourType = you.GetType();
         if (this->IsTribal(you) && this->IsTribal(me))
