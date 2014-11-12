@@ -892,7 +892,7 @@ namespace MFM
       FILE* fp = fopen(path, "a");
 
       fprintf(fp,
-          "Epochs,Epoch AEPS,Res Count,Red Base Count,Red Infantry Count,Red Total Count,Blue Base Count,Blue Infantry Count,Blue Total Count\n");
+          "Epochs,Epoch AEPS,Res,Red Base,Red Infantry,Red Total,Blue Base,Blue Infantry,Blue Total\n");
       fclose(fp);
     }
 
