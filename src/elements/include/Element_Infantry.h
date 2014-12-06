@@ -162,7 +162,7 @@ namespace MFM
           {
             continue;
           }
-          T other = window.GetRelativeAtom(rel);
+          // T other = window.GetRelativeAtom(rel);
           bool isTribal = this->IsTribal(window, rel);
           bool sameTribe = isTribal && (!this->IsInSameTribe(self, window, rel));
           if (isTribal && sameTribe)

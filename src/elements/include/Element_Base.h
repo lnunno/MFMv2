@@ -91,13 +91,13 @@ namespace MFM
 
     private:
 
-      ElementParameterS32<CC> m_goldPerRes;
+      ElementParameterU32<CC> m_goldPerRes;
 
-      ElementParameterS32<CC> m_baseGoldCost;
-      ElementParameterS32<CC> m_baseCreateOdds;
+      ElementParameterU32<CC> m_baseGoldCost;
+      ElementParameterU32<CC> m_baseCreateOdds;
 
-      ElementParameterS32<CC> m_infantryGoldCost;
-      ElementParameterS32<CC> m_infantryCreateOdds;
+      ElementParameterU32<CC> m_infantryGoldCost;
+      ElementParameterU32<CC> m_infantryCreateOdds;
 
       /**
        * This is the factor in which the Base is happy to stay where it
